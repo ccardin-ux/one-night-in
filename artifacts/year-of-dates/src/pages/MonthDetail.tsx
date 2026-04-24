@@ -658,7 +658,7 @@ function SethPhase2({ chosenRecipe, sethItems, onToggle, onAdvance, isPending }:
       )}
 
       <div>
-        <p className="text-sm font-sans text-muted-foreground mb-3">Day 2 is about finding your ingredients and getting ahead on anything that takes time. Work through this list:</p>
+        <p className="text-sm font-sans text-muted-foreground mb-3">Day 2 is for sourcing and prep. Find your ingredients, then get ahead on anything you can make in advance:</p>
         <div className="space-y-2">
           {sethItems.map((item) => (
             <button
