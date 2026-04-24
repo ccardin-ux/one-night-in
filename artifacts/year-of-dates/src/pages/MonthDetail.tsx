@@ -128,6 +128,7 @@ export default function MonthDetail() {
     const nextPhase = Math.min((date?.sethPhase ?? 1) + 1, 3);
     await updateDate.mutateAsync({ month: monthNum, data: { sethPhase: nextPhase } });
     queryClient.invalidateQueries({ queryKey: getGetDateQueryKey(monthNum) });
+    queryClient.invalidateQueries({ queryKey: getListDatesQueryKey() });
     toast({ description: nextPhase === 3 ? "Cook night! Let's go." : "Phase updated." });
   };
 
@@ -135,6 +136,7 @@ export default function MonthDetail() {
     const nextPhase = Math.min((date?.elanaPhase ?? 1) + 1, 3);
     await updateDate.mutateAsync({ month: monthNum, data: { elanaPhase: nextPhase } });
     queryClient.invalidateQueries({ queryKey: getGetDateQueryKey(monthNum) });
+    queryClient.invalidateQueries({ queryKey: getListDatesQueryKey() });
     toast({ description: nextPhase === 3 ? "Playlist ready. Date night incoming." : "Phase updated." });
   };
 
