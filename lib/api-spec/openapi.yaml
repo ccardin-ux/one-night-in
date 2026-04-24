@@ -600,11 +600,19 @@ components:
           type: string
         completed:
           type: boolean
+        phase:
+          type: integer
+          description: "Which day (1/2/3) this item belongs to"
+        person:
+          type: string
+          description: "Who this item is for: seth, elana, or both"
       required:
         - id
         - month
         - label
         - completed
+        - phase
+        - person
 
     ToggleChecklistItemBody:
       type: object

@@ -949,7 +949,32 @@ export async function seed() {
     const dinner = firstRow.dinner as Record<string, unknown>;
     const hasNewFormat = Array.isArray(dinner?.options);
     if (hasNewFormat) {
-      logger.info("Seed data already exists in new format, skipping");
+      const firstChecklist = await db.select().from(checklistItemsTable).limit(1);
+      const checklistHasPersonData = firstChecklist.length > 0 && firstChecklist[0].person !== "both";
+      if (checklistHasPersonData || firstChecklist.length === 0) {
+        if (firstChecklist.length === 0) {
+          logger.info("Date plans exist but checklist is empty — seeding checklist items...");
+          for (const [monthStr, items] of Object.entries(CHECKLIST_ITEMS)) {
+            const month = parseInt(monthStr, 10);
+            for (const item of items) {
+              await db.insert(checklistItemsTable).values({ month, label: item.label, completed: false, phase: item.phase, person: item.person });
+            }
+          }
+          logger.info("Checklist seed complete");
+        } else {
+          logger.info("Seed data already exists in new format with phase/person data, skipping");
+        }
+        return;
+      }
+      logger.info("Checklist items lack phase/person data — clearing and re-seeding checklist...");
+      await db.delete(checklistItemsTable);
+      for (const [monthStr, items] of Object.entries(CHECKLIST_ITEMS)) {
+        const month = parseInt(monthStr, 10);
+        for (const item of items) {
+          await db.insert(checklistItemsTable).values({ month, label: item.label, completed: false, phase: item.phase, person: item.person });
+        }
+      }
+      logger.info("Checklist re-seed complete");
       return;
     }
     logger.info("Legacy seed data detected — clearing and re-seeding with new format...");
@@ -970,6 +995,8 @@ export async function seed() {
         month,
         label: item.label,
         completed: false,
+        phase: item.phase,
+        person: item.person,
       });
     }
   }

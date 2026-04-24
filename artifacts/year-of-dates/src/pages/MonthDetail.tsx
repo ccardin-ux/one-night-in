@@ -203,20 +203,16 @@ export default function MonthDetail() {
   const chosenRecipe = dinner.options.find((o) => o.id === date.sethRecipeChoice);
   const chosenMood = music.moods.find((m) => m.id === date.elanaVibeChoice);
 
-  const phaseChecklistItems = checklist?.filter((item) => {
-    const label = item.label.toLowerCase();
-    if (sethPhase === 1) return label.startsWith("seth:") && label.includes("browse") || label.includes("read all") || label.includes("look back");
-    if (sethPhase === 2) return label.startsWith("seth:") && (label.includes("source") || label.includes("buy") || label.includes("visit") || label.includes("find a") || label.includes("ingredi"));
-    return label.startsWith("both:") || label.includes("cook");
-  }) ?? [];
+  const phaseChecklistItems = checklist?.filter((item) =>
+    item.person === "seth" && item.phase === sethPhase
+  ) ?? [];
 
-  const elanaChecklistItems = checklist?.filter((item) => {
-    const label = item.label.toLowerCase();
-    return label.startsWith("elana:");
-  }) ?? [];
+  const elanaChecklistItems = checklist?.filter((item) =>
+    item.person === "elana" && item.phase === elanaPhase
+  ) ?? [];
 
   const bothChecklistItems = checklist?.filter((item) =>
-    item.label.toLowerCase().startsWith("both:")
+    item.person === "both"
   ) ?? [];
 
   return (
@@ -623,14 +619,14 @@ function SethPhase1({ options, onChoose, isPending }: {
             <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{option.prepTime}</span>
             <span className="flex items-center gap-1"><Flame className="w-3 h-3" />{option.difficulty}</span>
           </div>
-          <details className="text-xs font-sans">
-            <summary className="cursor-pointer text-primary/70 hover:text-primary transition-colors">See ingredients</summary>
-            <div className="mt-2 flex flex-wrap gap-1.5">
+          <div>
+            <p className="text-xs text-muted-foreground uppercase tracking-widest font-sans mb-1.5">Ingredients to source</p>
+            <div className="flex flex-wrap gap-1.5">
               {option.ingredients.map((ing, i) => (
-                <span key={i} className="px-2 py-0.5 bg-muted rounded-full text-muted-foreground">{ing}</span>
+                <span key={i} className="px-2 py-0.5 bg-muted rounded-full text-xs text-muted-foreground font-sans">{ing}</span>
               ))}
             </div>
-          </details>
+          </div>
           <button
             onClick={() => onChoose(option.id)}
             disabled={isPending}
@@ -743,17 +739,29 @@ function ElanaPhase1({ moods, onChoose, isPending }: {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground font-sans">What are you in the mood for tonight? Don't overthink it. Your gut knows.</p>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-3">
         {moods.map((mood) => (
           <button
             key={mood.id}
             onClick={() => onChoose(mood.id)}
             disabled={isPending}
-            className="rounded-xl border border-border bg-background p-4 text-left hover:border-primary/50 hover:bg-rose-50/50 transition-all group disabled:opacity-50"
+            className="w-full rounded-xl border border-border bg-background p-4 text-left hover:border-primary/50 hover:bg-rose-50/50 transition-all group disabled:opacity-50"
           >
-            <div className="text-2xl mb-2">{mood.emoji}</div>
-            <h3 className="font-serif text-lg text-foreground group-hover:text-primary transition-colors">{mood.name}</h3>
-            <p className="text-xs text-muted-foreground font-sans mt-1 leading-snug">{mood.description}</p>
+            <div className="flex items-start gap-3">
+              <span className="text-2xl shrink-0">{mood.emoji}</span>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-serif text-base text-foreground group-hover:text-primary transition-colors">{mood.name}</h3>
+                <p className="text-xs text-muted-foreground font-sans mt-0.5 leading-snug">{mood.description}</p>
+                <p className="text-xs text-primary/70 font-sans mt-1.5 italic">{mood.playlistDirection}</p>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {mood.artists.map((artist) => (
+                    <span key={artist} className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-xs font-sans">
+                      {artist}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
           </button>
         ))}
       </div>

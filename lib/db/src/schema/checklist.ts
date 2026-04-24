@@ -7,6 +7,8 @@ export const checklistItemsTable = pgTable("checklist_items", {
   month: integer("month").notNull(),
   label: text("label").notNull(),
   completed: boolean("completed").notNull().default(false),
+  phase: integer("phase").notNull().default(1),
+  person: text("person").notNull().default("both"),
 });
 
 export const insertChecklistItemSchema = createInsertSchema(checklistItemsTable).omit({ id: true });

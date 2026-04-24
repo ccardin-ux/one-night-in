@@ -11,4 +11,8 @@ export interface ChecklistItem {
   month: number;
   label: string;
   completed: boolean;
+  /** Which day (1/2/3) this item belongs to */
+  phase: number;
+  /** Who this item is for: seth, elana, or both */
+  person: string;
 }

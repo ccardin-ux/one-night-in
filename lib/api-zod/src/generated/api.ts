@@ -318,6 +318,8 @@ export const GetChecklistResponseItem = zod.object({
   month: zod.number(),
   label: zod.string(),
   completed: zod.boolean(),
+  phase: zod.number().describe("Which day (1\/2\/3) this item belongs to"),
+  person: zod.string().describe("Who this item is for: seth, elana, or both"),
 });
 export const GetChecklistResponse = zod.array(GetChecklistResponseItem);
 
@@ -338,6 +340,8 @@ export const ToggleChecklistItemResponse = zod.object({
   month: zod.number(),
   label: zod.string(),
   completed: zod.boolean(),
+  phase: zod.number().describe("Which day (1\/2\/3) this item belongs to"),
+  person: zod.string().describe("Who this item is for: seth, elana, or both"),
 });
 
 /**
