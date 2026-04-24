@@ -324,7 +324,9 @@ export default function MonthDetail() {
               {sethPhase === 1 && (
                 <SethPhase1
                   options={dinner.options}
+                  sourcingItems={phaseChecklistItems}
                   onChoose={handleChooseRecipe}
+                  onToggle={handleToggleChecklist}
                   isPending={updateDate.isPending}
                 />
               )}
@@ -600,9 +602,11 @@ function PhaseStepper({ phase, labels, color = "amber" }: { phase: number; label
   );
 }
 
-function SethPhase1({ options, onChoose, isPending }: {
+function SethPhase1({ options, sourcingItems, onChoose, onToggle, isPending }: {
   options: RecipeOption[];
+  sourcingItems: { id: number; label: string; completed: boolean }[];
   onChoose: (id: number) => void;
+  onToggle: (id: number, completed: boolean) => void;
   isPending: boolean;
 }) {
   return (
@@ -636,6 +640,28 @@ function SethPhase1({ options, onChoose, isPending }: {
           </button>
         </div>
       ))}
+      {sourcingItems.length > 0 && (
+        <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 space-y-2">
+          <p className="text-xs text-stone-500 uppercase tracking-widest font-sans">Day 1 tasks</p>
+          {sourcingItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => onToggle(item.id, item.completed)}
+              data-testid={`checklist-item-${item.id}`}
+              className="w-full flex items-start gap-3 text-left p-2 rounded-lg hover:bg-stone-100 transition-colors"
+            >
+              {item.completed ? (
+                <CheckSquare className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+              ) : (
+                <Square className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+              )}
+              <span className={cn("text-sm font-sans leading-snug", item.completed && "line-through text-muted-foreground")}>
+                {item.label.replace(/^Seth:\s*/i, "")}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -658,7 +684,7 @@ function SethPhase2({ chosenRecipe, sethItems, onToggle, onAdvance, isPending }:
       )}
 
       <div>
-        <p className="text-sm font-sans text-muted-foreground mb-3">Day 2 is for sourcing and prep. Find your ingredients, then get ahead on anything you can make in advance:</p>
+        <p className="text-sm font-sans text-muted-foreground mb-3">Day 2 is prep day. Get your kitchen ready — work through these tasks before cook night:</p>
         <div className="space-y-2">
           {sethItems.map((item) => (
             <button
@@ -682,17 +708,6 @@ function SethPhase2({ chosenRecipe, sethItems, onToggle, onAdvance, isPending }:
           ))}
         </div>
       </div>
-
-      {chosenRecipe && (
-        <div>
-          <p className="text-xs text-muted-foreground uppercase tracking-widest font-sans mb-2">Ingredients to source</p>
-          <div className="flex flex-wrap gap-1.5">
-            {chosenRecipe.ingredients.map((ing, i) => (
-              <span key={i} className="px-2.5 py-1 bg-muted rounded-full text-xs font-sans text-muted-foreground">{ing}</span>
-            ))}
-          </div>
-        </div>
-      )}
 
       <button
         onClick={onAdvance}
