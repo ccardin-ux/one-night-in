@@ -335,9 +335,7 @@ export default function MonthDetail() {
               {sethPhase === 2 && (
                 <SethPhase2
                   chosenRecipe={chosenRecipe}
-                  checklistItems={phaseChecklistItems}
-                  allChecklistItems={checklist ?? []}
-                  sethItems={checklist?.filter(i => i.label.toLowerCase().startsWith("seth:")) ?? []}
+                  sethItems={phaseChecklistItems}
                   onToggle={handleToggleChecklist}
                   onAdvance={handleAdvanceSethPhase}
                   isPending={updateDate.isPending}
@@ -648,8 +646,6 @@ function SethPhase1({ options, onChoose, isPending }: {
 
 function SethPhase2({ chosenRecipe, sethItems, onToggle, onAdvance, isPending }: {
   chosenRecipe?: RecipeOption;
-  checklistItems: ReturnType<typeof Array.prototype.filter>;
-  allChecklistItems: ReturnType<typeof Array.prototype.filter>;
   sethItems: { id: number; label: string; completed: boolean }[];
   onToggle: (id: number, completed: boolean) => void;
   onAdvance: () => void;

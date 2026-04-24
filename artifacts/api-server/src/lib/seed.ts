@@ -945,8 +945,16 @@ const CHECKLIST_ITEMS: Record<number, { label: string; phase: number; person: "s
 export async function seed() {
   const existing = await db.select().from(datePlansTable).limit(1);
   if (existing.length > 0) {
-    logger.info("Seed data already exists, skipping");
-    return;
+    const firstRow = existing[0];
+    const dinner = firstRow.dinner as Record<string, unknown>;
+    const hasNewFormat = Array.isArray(dinner?.options);
+    if (hasNewFormat) {
+      logger.info("Seed data already exists in new format, skipping");
+      return;
+    }
+    logger.info("Legacy seed data detected — clearing and re-seeding with new format...");
+    await db.delete(checklistItemsTable);
+    await db.delete(datePlansTable);
   }
 
   logger.info("Seeding date plans...");
