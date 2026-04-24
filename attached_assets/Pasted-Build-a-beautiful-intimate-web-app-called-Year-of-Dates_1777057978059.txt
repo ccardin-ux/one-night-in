@@ -1,0 +1,111 @@
+Build a beautiful, intimate web app called Year of Dates for Seth and Elana, a newly married couple, to help them create and enjoy one meaningful date night every month during their first year of marriage.
+
+This app should feel like a wedding gift, a relationship ritual, and a practical planning tool all at once. It should help them explore the world together through food, music, conversation, and playful shared experiences — without making date night feel like work.
+
+Who it is for
+
+Seth loves to cook, so food should be a central part of the experience.
+Elana is a DJ, so music should feel expressive, curated, and personal.
+They are both deep thinkers, big communicators, and not afraid of emotionally rich or wide-ranging conversations. The app should embrace that. It should not oversimplify them or make the experience feel shallow.
+
+Core concept
+
+Each month, the app should generate or present one complete date night plan built around a destination, culture, or theme. Every monthly date should feel like a small adventure they can actually pull off in real life.
+
+Each date night should include:
+
+a monthly theme or destination
+a dish or meal idea Seth can cook
+a music direction or playlist inspiration for Elana
+a simple ritual to begin the evening
+a set of thoughtful conversation questions
+a fun, surprising, or unique shared activity
+an easy way to schedule it on the calendar
+a light prep checklist
+a place to capture memories, notes, and what they learned about each other
+What success looks like
+
+The app should make it easy for Seth and Elana to:
+
+keep date night consistent for 12 months
+spend less time planning and more time enjoying
+have deeper, more memorable conversations
+explore new places, ideas, and cultures together
+create a meaningful first-year keepsake of their marriage
+Product experience
+
+The app should center around a 12-month journey.
+
+They should be able to:
+
+See all 12 months at a glance
+Open the current month’s date night
+View a complete plan for the evening
+Add it to their calendar
+Check off any prep steps
+Use the app during the date if needed
+Save reflections afterward
+Monthly date structure
+
+Each month should feel fully curated and easy to act on. Every monthly date page should include:
+
+Month name
+Theme / destination / concept
+Short intro explaining the vibe of the month
+Dinner idea with a cuisine or dish Seth can make
+Music inspiration Elana can turn into a playlist
+Opening ritual to mark the beginning of the night
+Conversation prompts designed for people who like to go deep and wide
+One fun activity that feels fresh, playful, or unexpected
+Optional local add-on if they want to leave the house
+Prep checklist
+Estimated effort, cost, and time
+Add to calendar action
+Post-date reflection section
+Tone and design direction
+
+The app should feel:
+
+warm
+elegant
+romantic
+thoughtful
+premium but not flashy
+emotionally intelligent
+easy to use
+
+It should feel more like a carefully designed keepsake than a generic productivity tool.
+
+Important product principles
+Keep the scope focused on 12 monthly date nights
+Prioritize clarity and execution over too many options
+Make each month feel curated, not random
+Keep planning friction low
+Make every date feel special but still realistic
+Support deep conversation without making the app feel like therapy
+Let food, music, ritual, and play work together as one experience
+Functional requirements
+
+Include:
+
+a homepage or dashboard with all 12 monthly dates
+one featured date night plan per month
+the ability to swap or regenerate a monthly theme
+a clear Add to Calendar action
+a prep checklist
+a reflection / memory capture flow
+a section that tracks what we’re learning about each other
+saved favorite rituals, activities, or prompts
+Explicitly out of scope
+
+Do not make this:
+
+a generic couples app
+a therapy or counseling product
+a travel booking platform
+a social network
+an endless feed of recommendations
+
+Keep it focused on a single, beautiful promise:
+
+Help Seth and Elana enjoy one easy, meaningful, world-inspired date night every month during their first year of marriage.
