@@ -154,8 +154,18 @@ export default function Dashboard() {
                         </div>
                         <ChevronRight className="w-4 h-4 text-muted-foreground/50 group-hover:text-primary transition-colors" />
                       </div>
+                      {!isCompleted && (
+                        <div className="mt-2 flex gap-2 text-xs">
+                          <span className="px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 font-sans">
+                            🍳 Day {date.sethPhase}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 font-sans">
+                            🎵 Day {date.elanaPhase}
+                          </span>
+                        </div>
+                      )}
                       {date.scheduledDate && !isCompleted && (
-                        <div className="mt-2 text-xs text-primary/70 flex items-center gap-1">
+                        <div className="mt-1 text-xs text-primary/70 flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           {new Date(date.scheduledDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                         </div>

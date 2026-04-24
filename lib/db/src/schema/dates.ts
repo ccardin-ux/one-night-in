@@ -1,4 +1,4 @@
-import { pgTable, text, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, boolean, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -21,6 +21,10 @@ export const datePlansTable = pgTable("date_plans", {
   scheduledDate: text("scheduled_date"),
   completed: boolean("completed").notNull().default(false),
   completedAt: text("completed_at"),
+  sethPhase: integer("seth_phase").notNull().default(1),
+  elanaPhase: integer("elana_phase").notNull().default(1),
+  sethRecipeChoice: integer("seth_recipe_choice"),
+  elanaVibeChoice: text("elana_vibe_choice"),
 });
 
 export const insertDatePlanSchema = createInsertSchema(datePlansTable);

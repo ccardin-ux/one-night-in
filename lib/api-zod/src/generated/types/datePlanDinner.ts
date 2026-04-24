@@ -5,9 +5,8 @@
  * Year of Dates API
  * OpenAPI spec version: 0.1.0
  */
+import type { RecipeOption } from "./recipeOption";
 
 export type DatePlanDinner = {
-  dish: string;
-  cuisine: string;
-  description: string;
+  options: RecipeOption[];
 };

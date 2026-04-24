@@ -5,9 +5,8 @@
  * Year of Dates API
  * OpenAPI spec version: 0.1.0
  */
+import type { MoodOption } from "./moodOption";
 
 export type DatePlanMusic = {
-  direction: string;
-  artists: string[];
-  mood: string;
+  moods: MoodOption[];
 };

@@ -23,6 +23,8 @@ export * from "./favoriteType";
 export * from "./healthStatus";
 export * from "./learning";
 export * from "./learningAbout";
+export * from "./moodOption";
+export * from "./recipeOption";
 export * from "./reflection";
 export * from "./summary";
 export * from "./toggleChecklistItemBody";

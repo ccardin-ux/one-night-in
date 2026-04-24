@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useLocation } from "wouter";
+import { useParams } from "wouter";
 import {
   useGetDate,
   useGetChecklist,
@@ -21,16 +21,37 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, MapPin, Clock, DollarSign, ChefHat, Music, Flame,
   MessageCircle, Sparkles, Navigation, CheckSquare, Square,
-  Calendar, CalendarPlus, Star, Heart, BookOpen, Check, X
+  Calendar, CalendarPlus, Star, Heart, BookOpen, Check, X, ChevronRight
 } from "lucide-react";
 import { Link } from "wouter";
 import { cn, getMonthGradient, generateGoogleCalendarUrl, downloadICS } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
+interface RecipeOption {
+  id: number;
+  dish: string;
+  cuisine: string;
+  description: string;
+  difficulty: string;
+  prepTime: string;
+  ingredients: string[];
+}
+
+interface MoodOption {
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+  artists: string[];
+  playlistDirection: string;
+}
+
+const PHASE_LABELS_SETH = ["Choose Your Recipe", "Source & Prep", "Cook Night"];
+const PHASE_LABELS_ELANA = ["Choose Your Vibe", "Build the Playlist", "Set the Mood"];
+
 export default function MonthDetail() {
   const { month } = useParams<{ month: string }>();
   const monthNum = parseInt(month || "1", 10);
-  const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -83,13 +104,47 @@ export default function MonthDetail() {
     queryClient.invalidateQueries({ queryKey: getGetChecklistQueryKey(monthNum) });
   };
 
+  const handleChooseRecipe = async (recipeId: number) => {
+    await updateDate.mutateAsync({
+      month: monthNum,
+      data: { sethRecipeChoice: recipeId, sethPhase: 2 },
+    });
+    queryClient.invalidateQueries({ queryKey: getGetDateQueryKey(monthNum) });
+    queryClient.invalidateQueries({ queryKey: getListDatesQueryKey() });
+    toast({ description: "Recipe chosen. Time to source those ingredients." });
+  };
+
+  const handleChooseVibe = async (vibeId: string) => {
+    await updateDate.mutateAsync({
+      month: monthNum,
+      data: { elanaVibeChoice: vibeId, elanaPhase: 2 },
+    });
+    queryClient.invalidateQueries({ queryKey: getGetDateQueryKey(monthNum) });
+    queryClient.invalidateQueries({ queryKey: getListDatesQueryKey() });
+    toast({ description: "Vibe locked in. Time to build that playlist." });
+  };
+
+  const handleAdvanceSethPhase = async () => {
+    const nextPhase = Math.min((date?.sethPhase ?? 1) + 1, 3);
+    await updateDate.mutateAsync({ month: monthNum, data: { sethPhase: nextPhase } });
+    queryClient.invalidateQueries({ queryKey: getGetDateQueryKey(monthNum) });
+    toast({ description: nextPhase === 3 ? "Cook night! Let's go." : "Phase updated." });
+  };
+
+  const handleAdvanceElanaPhase = async () => {
+    const nextPhase = Math.min((date?.elanaPhase ?? 1) + 1, 3);
+    await updateDate.mutateAsync({ month: monthNum, data: { elanaPhase: nextPhase } });
+    queryClient.invalidateQueries({ queryKey: getGetDateQueryKey(monthNum) });
+    toast({ description: nextPhase === 3 ? "Playlist ready. Date night incoming." : "Phase updated." });
+  };
+
   const handleSchedule = async () => {
     if (!scheduleDate) return;
     await updateDate.mutateAsync({ month: monthNum, data: { scheduledDate: scheduleDate } });
     queryClient.invalidateQueries({ queryKey: getGetDateQueryKey(monthNum) });
     queryClient.invalidateQueries({ queryKey: getListDatesQueryKey() });
     setShowScheduleModal(false);
-    toast({ description: "Date scheduled!" });
+    toast({ description: "Date night scheduled!" });
   };
 
   const handleMarkComplete = async () => {
@@ -116,7 +171,7 @@ export default function MonthDetail() {
   const handleAddToCalendar = () => {
     if (!date) return;
     const title = `Date Night: ${date.theme} — ${date.monthName}`;
-    const desc = `${date.intro}\n\nDinner: ${(date.dinner as { dish: string }).dish}\nMusic: ${(date.music as { direction: string }).direction}`;
+    const desc = date.intro;
     if (date.scheduledDate) {
       window.open(generateGoogleCalendarUrl(title, date.scheduledDate, desc), "_blank");
     } else {
@@ -135,23 +190,41 @@ export default function MonthDetail() {
     );
   }
 
-  const dinner = date.dinner as { dish: string; cuisine: string; description: string };
-  const music = date.music as { direction: string; artists: string[]; mood: string };
+  const dinner = date.dinner as { options: RecipeOption[] };
+  const music = date.music as { moods: MoodOption[] };
   const ritual = date.ritual as { title: string; description: string };
   const activity = date.activity as { title: string; description: string };
   const localAddOn = date.localAddOn as { title: string; description: string };
   const prompts = date.conversationPrompts as string[];
   const gradient = getMonthGradient(monthNum);
 
-  const completedItems = checklist?.filter((i) => i.completed).length ?? 0;
-  const totalItems = checklist?.length ?? 0;
+  const sethPhase = date.sethPhase ?? 1;
+  const elanaPhase = date.elanaPhase ?? 1;
+  const chosenRecipe = dinner.options.find((o) => o.id === date.sethRecipeChoice);
+  const chosenMood = music.moods.find((m) => m.id === date.elanaVibeChoice);
+
+  const phaseChecklistItems = checklist?.filter((item) => {
+    const label = item.label.toLowerCase();
+    if (sethPhase === 1) return label.startsWith("seth:") && label.includes("browse") || label.includes("read all") || label.includes("look back");
+    if (sethPhase === 2) return label.startsWith("seth:") && (label.includes("source") || label.includes("buy") || label.includes("visit") || label.includes("find a") || label.includes("ingredi"));
+    return label.startsWith("both:") || label.includes("cook");
+  }) ?? [];
+
+  const elanaChecklistItems = checklist?.filter((item) => {
+    const label = item.label.toLowerCase();
+    return label.startsWith("elana:");
+  }) ?? [];
+
+  const bothChecklistItems = checklist?.filter((item) =>
+    item.label.toLowerCase().startsWith("both:")
+  ) ?? [];
 
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
       <div className={cn("relative bg-gradient-to-br text-white", gradient)}>
         <div className="absolute inset-0 bg-black/30" />
-        <div className="relative max-w-3xl mx-auto px-6 py-12">
+        <div className="relative max-w-5xl mx-auto px-6 py-12">
           <Link href="/" data-testid="back-button">
             <button className="flex items-center gap-2 text-white/70 hover:text-white transition-colors mb-8 text-sm font-sans">
               <ArrowLeft className="w-4 h-4" />
@@ -172,7 +245,7 @@ export default function MonthDetail() {
               <MapPin className="w-3.5 h-3.5" />
               <span className="font-sans">{date.destination}</span>
             </div>
-            <p className="font-serif text-xl italic text-white/80 leading-relaxed max-w-xl">
+            <p className="font-serif text-xl italic text-white/80 leading-relaxed max-w-2xl">
               {date.tagline}
             </p>
 
@@ -185,13 +258,13 @@ export default function MonthDetail() {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-6 py-10 space-y-10">
+      <div className="max-w-5xl mx-auto px-6 py-10 space-y-12">
         {/* Intro */}
         <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
           <p className="font-serif text-lg leading-relaxed text-foreground/80 italic">{date.intro}</p>
         </motion.section>
 
-        {/* Actions */}
+        {/* Action bar */}
         <motion.section
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
           className="flex flex-wrap gap-3"
@@ -207,11 +280,7 @@ export default function MonthDetail() {
           <button
             onClick={() => {
               if (date.scheduledDate) {
-                downloadICS(
-                  `Date Night: ${date.theme}`,
-                  date.scheduledDate,
-                  date.intro
-                );
+                downloadICS(`Date Night: ${date.theme}`, date.scheduledDate, date.intro);
               } else {
                 setShowScheduleModal(true);
               }
@@ -239,25 +308,90 @@ export default function MonthDetail() {
           )}
         </motion.section>
 
-        {/* Checklist */}
-        {checklist && checklist.length > 0 && (
-          <Section title="Prep Checklist" icon={CheckSquare} delay={0.2}>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex-1 bg-muted rounded-full h-1.5">
-                <div
-                  className="bg-primary rounded-full h-1.5 transition-all duration-500"
-                  style={{ width: `${totalItems ? (completedItems / totalItems) * 100 : 0}%` }}
-                />
+        {/* Two-track journey */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+        >
+          {/* Seth's Track */}
+          <div className="rounded-2xl border border-border bg-card overflow-hidden">
+            <div className="bg-stone-800 text-white px-6 py-4">
+              <div className="flex items-center gap-2 mb-3">
+                <ChefHat className="w-4 h-4 text-amber-300" />
+                <span className="text-sm font-sans tracking-widest uppercase text-amber-300/80">Seth's Kitchen</span>
               </div>
-              <span className="text-xs text-muted-foreground font-sans">{completedItems}/{totalItems}</span>
+              <PhaseStepper phase={sethPhase} labels={PHASE_LABELS_SETH} />
             </div>
+            <div className="p-6">
+              {sethPhase === 1 && (
+                <SethPhase1
+                  options={dinner.options}
+                  onChoose={handleChooseRecipe}
+                  isPending={updateDate.isPending}
+                />
+              )}
+              {sethPhase === 2 && (
+                <SethPhase2
+                  chosenRecipe={chosenRecipe}
+                  checklistItems={phaseChecklistItems}
+                  allChecklistItems={checklist ?? []}
+                  sethItems={checklist?.filter(i => i.label.toLowerCase().startsWith("seth:")) ?? []}
+                  onToggle={handleToggleChecklist}
+                  onAdvance={handleAdvanceSethPhase}
+                  isPending={updateDate.isPending}
+                />
+              )}
+              {sethPhase === 3 && (
+                <SethPhase3 chosenRecipe={chosenRecipe} />
+              )}
+            </div>
+          </div>
+
+          {/* Elana's Track */}
+          <div className="rounded-2xl border border-border bg-card overflow-hidden">
+            <div className="bg-rose-900 text-white px-6 py-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Music className="w-4 h-4 text-rose-200" />
+                <span className="text-sm font-sans tracking-widest uppercase text-rose-200/80">Elana's Soundscape</span>
+              </div>
+              <PhaseStepper phase={elanaPhase} labels={PHASE_LABELS_ELANA} color="rose" />
+            </div>
+            <div className="p-6">
+              {elanaPhase === 1 && (
+                <ElanaPhase1
+                  moods={music.moods}
+                  onChoose={handleChooseVibe}
+                  isPending={updateDate.isPending}
+                />
+              )}
+              {elanaPhase === 2 && (
+                <ElanaPhase2
+                  chosenMood={chosenMood}
+                  elanaItems={elanaChecklistItems}
+                  onToggle={handleToggleChecklist}
+                  onAdvance={handleAdvanceElanaPhase}
+                  isPending={updateDate.isPending}
+                />
+              )}
+              {elanaPhase === 3 && (
+                <ElanaPhase3 chosenMood={chosenMood} />
+              )}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Date Night Checklist (both phase 3) */}
+        {bothChecklistItems.length > 0 && (
+          <Section title="Date Night Prep" icon={CheckSquare} delay={0.25}>
             <div className="space-y-2">
-              {checklist.map((item) => (
+              {bothChecklistItems.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => handleToggleChecklist(item.id, item.completed)}
                   data-testid={`checklist-item-${item.id}`}
-                  className="w-full flex items-start gap-3 text-left p-3 rounded-xl hover:bg-accent transition-colors group"
+                  className="w-full flex items-start gap-3 text-left p-3 rounded-xl hover:bg-accent transition-colors"
                 >
                   {item.completed ? (
                     <CheckSquare className="w-5 h-5 text-primary shrink-0 mt-0.5" />
@@ -276,8 +410,8 @@ export default function MonthDetail() {
           </Section>
         )}
 
-        {/* Ritual */}
-        <Section title="Opening Ritual" icon={Flame} delay={0.25}>
+        {/* Opening Ritual */}
+        <Section title="Opening Ritual" icon={Flame} delay={0.3}>
           <FavoriteCard
             title={ritual.title}
             body={ritual.description}
@@ -288,39 +422,8 @@ export default function MonthDetail() {
           />
         </Section>
 
-        {/* Dinner */}
-        <Section title="The Dinner" icon={ChefHat} delay={0.3}>
-          <div className="rounded-2xl border border-border bg-card p-6">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <h3 className="font-serif text-xl text-foreground">{dinner.dish}</h3>
-                <p className="text-sm text-primary/70 font-sans mt-0.5">{dinner.cuisine}</p>
-              </div>
-            </div>
-            <p className="text-muted-foreground leading-relaxed font-sans text-sm">{dinner.description}</p>
-          </div>
-        </Section>
-
-        {/* Music */}
-        <Section title="The Music" icon={Music} delay={0.35}>
-          <div className="rounded-2xl border border-border bg-card p-6">
-            <p className="font-serif text-lg italic text-foreground mb-3">"{music.mood}"</p>
-            <p className="text-sm text-muted-foreground mb-4 font-sans">{music.direction}</p>
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-widest font-sans mb-2">Start with</p>
-              <div className="flex flex-wrap gap-2">
-                {music.artists.map((artist) => (
-                  <span key={artist} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-sans">
-                    {artist}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </Section>
-
         {/* Conversation */}
-        <Section title="Conversation" icon={MessageCircle} delay={0.4}>
+        <Section title="Conversation" icon={MessageCircle} delay={0.35}>
           <div className="space-y-3">
             {prompts.map((prompt, i) => (
               <FavoriteCard
@@ -337,7 +440,7 @@ export default function MonthDetail() {
         </Section>
 
         {/* Activity */}
-        <Section title="The Activity" icon={Sparkles} delay={0.45}>
+        <Section title="The Activity" icon={Sparkles} delay={0.4}>
           <FavoriteCard
             title={activity.title}
             body={activity.description}
@@ -349,14 +452,14 @@ export default function MonthDetail() {
         </Section>
 
         {/* Local Add-On */}
-        <Section title="If You Leave the House" icon={Navigation} delay={0.5}>
+        <Section title="If You Leave the House" icon={Navigation} delay={0.45}>
           <div className="rounded-2xl border border-border bg-card p-6">
             <h3 className="font-serif text-lg text-foreground mb-2">{localAddOn.title}</h3>
             <p className="text-sm text-muted-foreground font-sans leading-relaxed">{localAddOn.description}</p>
           </div>
         </Section>
 
-        {/* Post-date reflection link */}
+        {/* Post-date reflection */}
         {date.completed && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -365,7 +468,7 @@ export default function MonthDetail() {
           >
             <BookOpen className="w-6 h-6 text-primary mx-auto mb-3" />
             <h3 className="font-serif text-xl text-foreground mb-2">This date is complete</h3>
-            <p className="text-sm text-muted-foreground mb-4 font-sans">Add a reflection to capture what you felt and learned.</p>
+            <p className="text-sm text-muted-foreground mb-4 font-sans">Add a reflection to capture what you felt and what you learned.</p>
             <button
               onClick={() => setShowReflectionModal(true)}
               className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-sans hover:opacity-90 transition-opacity"
@@ -391,16 +494,14 @@ export default function MonthDetail() {
                   className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-foreground font-sans text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={handleSchedule}
-                  disabled={!scheduleDate}
-                  data-testid="button-save-schedule"
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-sans hover:opacity-90 transition-opacity disabled:opacity-50"
-                >
-                  Schedule & Add to Google Calendar
-                </button>
-              </div>
+              <button
+                onClick={handleSchedule}
+                disabled={!scheduleDate}
+                data-testid="button-save-schedule"
+                className="w-full px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-sans hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                Schedule & Add to Google Calendar
+              </button>
             </div>
           </Modal>
         )}
@@ -470,6 +571,314 @@ export default function MonthDetail() {
   );
 }
 
+function PhaseStepper({ phase, labels, color = "amber" }: { phase: number; labels: string[]; color?: "amber" | "rose" }) {
+  return (
+    <div className="flex items-center gap-1">
+      {labels.map((label, i) => {
+        const stepNum = i + 1;
+        const isActive = phase === stepNum;
+        const isDone = phase > stepNum;
+        return (
+          <div key={i} className="flex items-center gap-1 flex-1">
+            <div className={cn(
+              "flex items-center gap-1.5 min-w-0",
+              isActive ? "opacity-100" : isDone ? "opacity-60" : "opacity-30"
+            )}>
+              <div className={cn(
+                "w-5 h-5 rounded-full flex items-center justify-center text-xs font-sans shrink-0",
+                isDone
+                  ? color === "rose" ? "bg-rose-300 text-rose-900" : "bg-amber-300 text-amber-900"
+                  : isActive
+                  ? "bg-white text-stone-900"
+                  : "bg-white/20 text-white"
+              )}>
+                {isDone ? <Check className="w-3 h-3" /> : stepNum}
+              </div>
+              <span className="text-white text-xs font-sans truncate hidden sm:block">{label}</span>
+            </div>
+            {i < labels.length - 1 && (
+              <div className={cn("h-px flex-1 mx-1", phase > stepNum + 1 ? "bg-white/40" : "bg-white/15")} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function SethPhase1({ options, onChoose, isPending }: {
+  options: RecipeOption[];
+  onChoose: (id: number) => void;
+  isPending: boolean;
+}) {
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground font-sans">Browse these options. Pick the one that speaks to you — based on what you're in the mood to cook, not what you think you should make.</p>
+      {options.map((option) => (
+        <div key={option.id} className="rounded-xl border border-border bg-background p-4 space-y-3">
+          <div>
+            <h3 className="font-serif text-lg text-foreground">{option.dish}</h3>
+            <p className="text-xs text-primary/70 font-sans mt-0.5">{option.cuisine}</p>
+          </div>
+          <p className="text-sm text-muted-foreground font-sans leading-relaxed">{option.description}</p>
+          <div className="flex items-center gap-3 text-xs text-muted-foreground font-sans">
+            <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{option.prepTime}</span>
+            <span className="flex items-center gap-1"><Flame className="w-3 h-3" />{option.difficulty}</span>
+          </div>
+          <details className="text-xs font-sans">
+            <summary className="cursor-pointer text-primary/70 hover:text-primary transition-colors">See ingredients</summary>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {option.ingredients.map((ing, i) => (
+                <span key={i} className="px-2 py-0.5 bg-muted rounded-full text-muted-foreground">{ing}</span>
+              ))}
+            </div>
+          </details>
+          <button
+            onClick={() => onChoose(option.id)}
+            disabled={isPending}
+            className="w-full py-2.5 rounded-xl bg-stone-800 text-white text-sm font-sans hover:bg-stone-700 transition-colors disabled:opacity-50"
+          >
+            I'll cook this →
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SethPhase2({ chosenRecipe, sethItems, onToggle, onAdvance, isPending }: {
+  chosenRecipe?: RecipeOption;
+  checklistItems: ReturnType<typeof Array.prototype.filter>;
+  allChecklistItems: ReturnType<typeof Array.prototype.filter>;
+  sethItems: { id: number; label: string; completed: boolean }[];
+  onToggle: (id: number, completed: boolean) => void;
+  onAdvance: () => void;
+  isPending: boolean;
+}) {
+  return (
+    <div className="space-y-5">
+      {chosenRecipe && (
+        <div className="rounded-xl bg-stone-50 border border-stone-200 p-4">
+          <p className="text-xs text-stone-500 uppercase tracking-widest font-sans mb-1">Your dish</p>
+          <h3 className="font-serif text-lg text-stone-900">{chosenRecipe.dish}</h3>
+          <p className="text-xs text-stone-500 mt-1 font-sans">{chosenRecipe.prepTime} · {chosenRecipe.difficulty}</p>
+        </div>
+      )}
+
+      <div>
+        <p className="text-sm font-sans text-muted-foreground mb-3">Day 2 is about finding your ingredients and getting ahead on anything that takes time. Work through this list:</p>
+        <div className="space-y-2">
+          {sethItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => onToggle(item.id, item.completed)}
+              data-testid={`checklist-item-${item.id}`}
+              className="w-full flex items-start gap-3 text-left p-3 rounded-xl hover:bg-accent transition-colors"
+            >
+              {item.completed ? (
+                <CheckSquare className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+              ) : (
+                <Square className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+              )}
+              <span className={cn(
+                "text-sm font-sans leading-snug",
+                item.completed && "line-through text-muted-foreground"
+              )}>
+                {item.label.replace(/^Seth:\s*/i, "")}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {chosenRecipe && (
+        <div>
+          <p className="text-xs text-muted-foreground uppercase tracking-widest font-sans mb-2">Ingredients to source</p>
+          <div className="flex flex-wrap gap-1.5">
+            {chosenRecipe.ingredients.map((ing, i) => (
+              <span key={i} className="px-2.5 py-1 bg-muted rounded-full text-xs font-sans text-muted-foreground">{ing}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <button
+        onClick={onAdvance}
+        disabled={isPending}
+        className="w-full py-2.5 rounded-xl border border-stone-300 text-stone-700 text-sm font-sans hover:bg-stone-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+      >
+        Ready for cook night <ChevronRight className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+
+function SethPhase3({ chosenRecipe }: { chosenRecipe?: RecipeOption }) {
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl bg-amber-50 border border-amber-200 p-4">
+        <p className="text-xs text-amber-700 uppercase tracking-widest font-sans mb-1">Tonight you're making</p>
+        <h3 className="font-serif text-xl text-stone-900">{chosenRecipe?.dish ?? "Your chosen dish"}</h3>
+        {chosenRecipe && (
+          <p className="text-xs text-amber-700/70 mt-1 font-sans">{chosenRecipe.cuisine} · {chosenRecipe.difficulty} · {chosenRecipe.prepTime}</p>
+        )}
+      </div>
+      <p className="text-sm text-muted-foreground font-sans leading-relaxed">
+        Cook with intention. Don't rush. Pour yourself something good before you start. The process is part of the date — not a chore to get through before it.
+      </p>
+      <div className="rounded-xl border border-border p-4 space-y-2">
+        <p className="text-xs text-muted-foreground uppercase tracking-widest font-sans">A few reminders</p>
+        <ul className="space-y-1.5 text-sm font-sans text-foreground/80">
+          <li>· Read the full recipe before you start. All the way through.</li>
+          <li>· Mise en place — prep everything before you turn on the heat.</li>
+          <li>· Taste as you go. Season with confidence.</li>
+          <li>· If something goes sideways, don't panic. Improvise. Tell the story later.</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function ElanaPhase1({ moods, onChoose, isPending }: {
+  moods: MoodOption[];
+  onChoose: (id: string) => void;
+  isPending: boolean;
+}) {
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground font-sans">What are you in the mood for tonight? Don't overthink it. Your gut knows.</p>
+      <div className="grid grid-cols-2 gap-3">
+        {moods.map((mood) => (
+          <button
+            key={mood.id}
+            onClick={() => onChoose(mood.id)}
+            disabled={isPending}
+            className="rounded-xl border border-border bg-background p-4 text-left hover:border-primary/50 hover:bg-rose-50/50 transition-all group disabled:opacity-50"
+          >
+            <div className="text-2xl mb-2">{mood.emoji}</div>
+            <h3 className="font-serif text-lg text-foreground group-hover:text-primary transition-colors">{mood.name}</h3>
+            <p className="text-xs text-muted-foreground font-sans mt-1 leading-snug">{mood.description}</p>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ElanaPhase2({ chosenMood, elanaItems, onToggle, onAdvance, isPending }: {
+  chosenMood?: MoodOption;
+  elanaItems: { id: number; label: string; completed: boolean }[];
+  onToggle: (id: number, completed: boolean) => void;
+  onAdvance: () => void;
+  isPending: boolean;
+}) {
+  return (
+    <div className="space-y-5">
+      {chosenMood && (
+        <div className="rounded-xl bg-rose-50 border border-rose-200 p-4">
+          <p className="text-xs text-rose-600 uppercase tracking-widest font-sans mb-1">Tonight's vibe</p>
+          <h3 className="font-serif text-lg text-rose-900">{chosenMood.emoji} {chosenMood.name}</h3>
+          <p className="text-xs text-rose-600/70 mt-1 font-sans italic">{chosenMood.playlistDirection}</p>
+        </div>
+      )}
+
+      {chosenMood && (
+        <div>
+          <p className="text-xs text-muted-foreground uppercase tracking-widest font-sans mb-2">Start with these artists</p>
+          <div className="flex flex-wrap gap-2">
+            {chosenMood.artists.map((artist) => (
+              <span key={artist} className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-sans">
+                {artist}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div>
+        <p className="text-sm font-sans text-muted-foreground mb-3">Day 2 is playlist day. Work through this:</p>
+        <div className="space-y-2">
+          {elanaItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => onToggle(item.id, item.completed)}
+              data-testid={`checklist-item-${item.id}`}
+              className="w-full flex items-start gap-3 text-left p-3 rounded-xl hover:bg-accent transition-colors"
+            >
+              {item.completed ? (
+                <CheckSquare className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+              ) : (
+                <Square className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+              )}
+              <span className={cn(
+                "text-sm font-sans leading-snug",
+                item.completed && "line-through text-muted-foreground"
+              )}>
+                {item.label.replace(/^Elana:\s*/i, "")}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border p-4">
+        <p className="text-xs text-muted-foreground uppercase tracking-widest font-sans mb-2">Playlist tips</p>
+        <ul className="space-y-1.5 text-sm font-sans text-foreground/80">
+          <li>· Start quieter, let it build through the evening</li>
+          <li>· Leave space for conversation — don't make it too loud</li>
+          <li>· Save your best track for after dinner, when everything has settled</li>
+        </ul>
+      </div>
+
+      <button
+        onClick={onAdvance}
+        disabled={isPending}
+        className="w-full py-2.5 rounded-xl border border-rose-200 text-rose-700 text-sm font-sans hover:bg-rose-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+      >
+        Playlist is ready <ChevronRight className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+
+function ElanaPhase3({ chosenMood }: { chosenMood?: MoodOption }) {
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl bg-rose-50 border border-rose-200 p-4">
+        <p className="text-xs text-rose-600 uppercase tracking-widest font-sans mb-1">Tonight's vibe</p>
+        <h3 className="font-serif text-xl text-rose-900">{chosenMood ? `${chosenMood.emoji} ${chosenMood.name}` : "Your chosen vibe"}</h3>
+        {chosenMood && (
+          <p className="text-xs text-rose-600/70 mt-1 font-sans italic">{chosenMood.playlistDirection}</p>
+        )}
+      </div>
+      <p className="text-sm text-muted-foreground font-sans leading-relaxed">
+        Your playlist is ready. Hit play before Seth starts cooking — let the room settle into the feeling before anything happens. You set the tone. That's the power.
+      </p>
+      <div className="rounded-xl border border-border p-4 space-y-2">
+        <p className="text-xs text-muted-foreground uppercase tracking-widest font-sans">Tonight you're the curator</p>
+        <ul className="space-y-1.5 text-sm font-sans text-foreground/80">
+          <li>· Read the room. If the energy shifts, shift the music.</li>
+          <li>· Don't over-explain the songs — let them land.</li>
+          <li>· If a song comes on that means something, say so.</li>
+          <li>· Turn it down slightly when the real conversation starts.</li>
+        </ul>
+      </div>
+      {chosenMood && (
+        <div>
+          <p className="text-xs text-muted-foreground uppercase tracking-widest font-sans mb-2">Your anchors</p>
+          <div className="flex flex-wrap gap-2">
+            {chosenMood.artists.map((artist) => (
+              <span key={artist} className="px-3 py-1.5 rounded-full bg-rose-100 text-rose-700 text-sm font-sans">
+                {artist}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Section({ title, icon: Icon, delay, children }: {
   title: string;
   icon: React.ElementType;
@@ -498,18 +907,17 @@ function FavoriteCard({ title, body, favType, isFavorited, onToggle, "data-testi
   return (
     <div className="rounded-2xl border border-border bg-card p-5 relative group" data-testid={testId}>
       <div className="flex items-start justify-between gap-3">
-        <div className="flex-1">
-          {title !== `Prompt 1` && title !== `Prompt 2` && title !== `Prompt 3` && title !== `Prompt 4` && title !== `Prompt 5` && (
-            <h3 className="font-serif text-lg text-foreground mb-2">{title}</h3>
-          )}
-          <p className="text-sm text-muted-foreground leading-relaxed font-sans">{body}</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs text-muted-foreground uppercase tracking-widest font-sans mb-2">{title}</p>
+          <p className="font-serif text-base leading-relaxed text-foreground">{body}</p>
         </div>
         <button
           onClick={onToggle}
-          data-testid={`favorite-${favType}`}
           className={cn(
-            "p-2 rounded-lg transition-colors shrink-0",
-            isFavorited ? "text-rose-500 bg-rose-50" : "text-muted-foreground/40 hover:text-rose-400 hover:bg-rose-50"
+            "shrink-0 p-1.5 rounded-lg transition-all",
+            isFavorited
+              ? "text-rose-500 bg-rose-50"
+              : "text-muted-foreground/30 hover:text-rose-400 hover:bg-rose-50"
           )}
         >
           <Heart className={cn("w-4 h-4", isFavorited && "fill-rose-500")} />
@@ -530,19 +938,20 @@ function Modal({ title, subtitle, onClose, children }: {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4"
+      onClick={onClose}
     >
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="relative bg-card rounded-2xl border border-border shadow-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        className="bg-background rounded-2xl p-6 w-full max-w-md shadow-xl"
+        onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between mb-5">
+        <div className="flex items-start justify-between mb-4">
           <div>
-            <h2 className="font-serif text-2xl text-foreground">{title}</h2>
-            {subtitle && <p className="text-sm text-muted-foreground mt-1 font-sans">{subtitle}</p>}
+            <h2 className="font-serif text-xl text-foreground">{title}</h2>
+            {subtitle && <p className="text-sm text-muted-foreground font-sans mt-1">{subtitle}</p>}
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors p-1">
             <X className="w-5 h-5" />
@@ -570,7 +979,7 @@ function ReflectionField({ label, value, onChange, placeholder, "data-testid": t
         placeholder={placeholder}
         data-testid={testId}
         rows={3}
-        className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground font-sans text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none placeholder:text-muted-foreground/50"
+        className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-foreground font-serif text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
       />
     </div>
   );

@@ -10,4 +10,8 @@ export interface UpdateDateBody {
   scheduledDate?: string | null;
   completed?: boolean;
   completedAt?: string | null;
+  sethPhase?: number;
+  elanaPhase?: number;
+  sethRecipeChoice?: number | null;
+  elanaVibeChoice?: string | null;
 }

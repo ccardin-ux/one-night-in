@@ -357,6 +357,46 @@ components:
       required:
         - status
 
+    RecipeOption:
+      type: object
+      properties:
+        id:
+          type: integer
+        dish:
+          type: string
+        cuisine:
+          type: string
+        description:
+          type: string
+        difficulty:
+          type: string
+        prepTime:
+          type: string
+        ingredients:
+          type: array
+          items:
+            type: string
+      required: [id, dish, cuisine, description, difficulty, prepTime, ingredients]
+
+    MoodOption:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        emoji:
+          type: string
+        description:
+          type: string
+        artists:
+          type: array
+          items:
+            type: string
+        playlistDirection:
+          type: string
+      required: [id, name, emoji, description, artists, playlistDirection]
+
     DatePlan:
       type: object
       properties:
@@ -375,25 +415,19 @@ components:
         dinner:
           type: object
           properties:
-            dish:
-              type: string
-            cuisine:
-              type: string
-            description:
-              type: string
-          required: [dish, cuisine, description]
+            options:
+              type: array
+              items:
+                $ref: "#/components/schemas/RecipeOption"
+          required: [options]
         music:
           type: object
           properties:
-            direction:
-              type: string
-            artists:
+            moods:
               type: array
               items:
-                type: string
-            mood:
-              type: string
-          required: [direction, artists, mood]
+                $ref: "#/components/schemas/MoodOption"
+          required: [moods]
         ritual:
           type: object
           properties:
@@ -436,6 +470,16 @@ components:
         completedAt:
           type: string
           nullable: true
+        sethPhase:
+          type: integer
+        elanaPhase:
+          type: integer
+        sethRecipeChoice:
+          type: integer
+          nullable: true
+        elanaVibeChoice:
+          type: string
+          nullable: true
       required:
         - month
         - monthName
@@ -453,6 +497,8 @@ components:
         - cost
         - duration
         - completed
+        - sethPhase
+        - elanaPhase
 
     UpdateDateBody:
       type: object
@@ -463,6 +509,16 @@ components:
         completed:
           type: boolean
         completedAt:
+          type: string
+          nullable: true
+        sethPhase:
+          type: integer
+        elanaPhase:
+          type: integer
+        sethRecipeChoice:
+          type: integer
+          nullable: true
+        elanaVibeChoice:
           type: string
           nullable: true
 

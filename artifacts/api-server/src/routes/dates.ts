@@ -55,6 +55,10 @@ router.patch("/dates/:month", async (req, res): Promise<void> => {
   if (parsed.data.scheduledDate !== undefined) updateData.scheduledDate = parsed.data.scheduledDate;
   if (parsed.data.completed !== undefined) updateData.completed = parsed.data.completed;
   if (parsed.data.completedAt !== undefined) updateData.completedAt = parsed.data.completedAt;
+  if (parsed.data.sethPhase !== undefined) updateData.sethPhase = parsed.data.sethPhase;
+  if (parsed.data.elanaPhase !== undefined) updateData.elanaPhase = parsed.data.elanaPhase;
+  if ("sethRecipeChoice" in parsed.data) updateData.sethRecipeChoice = parsed.data.sethRecipeChoice;
+  if ("elanaVibeChoice" in parsed.data) updateData.elanaVibeChoice = parsed.data.elanaVibeChoice;
 
   const [date] = await db
     .update(datePlansTable)

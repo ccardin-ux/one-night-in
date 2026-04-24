@@ -9,16 +9,31 @@ export interface HealthStatus {
   status: string;
 }
 
-export type DatePlanDinner = {
+export interface RecipeOption {
+  id: number;
   dish: string;
   cuisine: string;
   description: string;
+  difficulty: string;
+  prepTime: string;
+  ingredients: string[];
+}
+
+export interface MoodOption {
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+  artists: string[];
+  playlistDirection: string;
+}
+
+export type DatePlanDinner = {
+  options: RecipeOption[];
 };
 
 export type DatePlanMusic = {
-  direction: string;
-  artists: string[];
-  mood: string;
+  moods: MoodOption[];
 };
 
 export type DatePlanRitual = {
@@ -55,12 +70,20 @@ export interface DatePlan {
   scheduledDate?: string | null;
   completed: boolean;
   completedAt?: string | null;
+  sethPhase: number;
+  elanaPhase: number;
+  sethRecipeChoice?: number | null;
+  elanaVibeChoice?: string | null;
 }
 
 export interface UpdateDateBody {
   scheduledDate?: string | null;
   completed?: boolean;
   completedAt?: string | null;
+  sethPhase?: number;
+  elanaPhase?: number;
+  sethRecipeChoice?: number | null;
+  elanaVibeChoice?: string | null;
 }
 
 export interface Reflection {

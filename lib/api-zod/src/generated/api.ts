@@ -26,14 +26,29 @@ export const ListDatesResponseItem = zod.object({
   tagline: zod.string(),
   intro: zod.string(),
   dinner: zod.object({
-    dish: zod.string(),
-    cuisine: zod.string(),
-    description: zod.string(),
+    options: zod.array(
+      zod.object({
+        id: zod.number(),
+        dish: zod.string(),
+        cuisine: zod.string(),
+        description: zod.string(),
+        difficulty: zod.string(),
+        prepTime: zod.string(),
+        ingredients: zod.array(zod.string()),
+      }),
+    ),
   }),
   music: zod.object({
-    direction: zod.string(),
-    artists: zod.array(zod.string()),
-    mood: zod.string(),
+    moods: zod.array(
+      zod.object({
+        id: zod.string(),
+        name: zod.string(),
+        emoji: zod.string(),
+        description: zod.string(),
+        artists: zod.array(zod.string()),
+        playlistDirection: zod.string(),
+      }),
+    ),
   }),
   ritual: zod.object({
     title: zod.string(),
@@ -54,6 +69,10 @@ export const ListDatesResponseItem = zod.object({
   scheduledDate: zod.string().nullish(),
   completed: zod.boolean(),
   completedAt: zod.string().nullish(),
+  sethPhase: zod.number(),
+  elanaPhase: zod.number(),
+  sethRecipeChoice: zod.number().nullish(),
+  elanaVibeChoice: zod.string().nullish(),
 });
 export const ListDatesResponse = zod.array(ListDatesResponseItem);
 
@@ -74,14 +93,29 @@ export const GetDateResponse = zod.object({
   tagline: zod.string(),
   intro: zod.string(),
   dinner: zod.object({
-    dish: zod.string(),
-    cuisine: zod.string(),
-    description: zod.string(),
+    options: zod.array(
+      zod.object({
+        id: zod.number(),
+        dish: zod.string(),
+        cuisine: zod.string(),
+        description: zod.string(),
+        difficulty: zod.string(),
+        prepTime: zod.string(),
+        ingredients: zod.array(zod.string()),
+      }),
+    ),
   }),
   music: zod.object({
-    direction: zod.string(),
-    artists: zod.array(zod.string()),
-    mood: zod.string(),
+    moods: zod.array(
+      zod.object({
+        id: zod.string(),
+        name: zod.string(),
+        emoji: zod.string(),
+        description: zod.string(),
+        artists: zod.array(zod.string()),
+        playlistDirection: zod.string(),
+      }),
+    ),
   }),
   ritual: zod.object({
     title: zod.string(),
@@ -102,6 +136,10 @@ export const GetDateResponse = zod.object({
   scheduledDate: zod.string().nullish(),
   completed: zod.boolean(),
   completedAt: zod.string().nullish(),
+  sethPhase: zod.number(),
+  elanaPhase: zod.number(),
+  sethRecipeChoice: zod.number().nullish(),
+  elanaVibeChoice: zod.string().nullish(),
 });
 
 /**
@@ -117,6 +155,10 @@ export const UpdateDateBody = zod.object({
   scheduledDate: zod.string().nullish(),
   completed: zod.boolean().optional(),
   completedAt: zod.string().nullish(),
+  sethPhase: zod.number().optional(),
+  elanaPhase: zod.number().optional(),
+  sethRecipeChoice: zod.number().nullish(),
+  elanaVibeChoice: zod.string().nullish(),
 });
 
 export const UpdateDateResponse = zod.object({
@@ -127,14 +169,29 @@ export const UpdateDateResponse = zod.object({
   tagline: zod.string(),
   intro: zod.string(),
   dinner: zod.object({
-    dish: zod.string(),
-    cuisine: zod.string(),
-    description: zod.string(),
+    options: zod.array(
+      zod.object({
+        id: zod.number(),
+        dish: zod.string(),
+        cuisine: zod.string(),
+        description: zod.string(),
+        difficulty: zod.string(),
+        prepTime: zod.string(),
+        ingredients: zod.array(zod.string()),
+      }),
+    ),
   }),
   music: zod.object({
-    direction: zod.string(),
-    artists: zod.array(zod.string()),
-    mood: zod.string(),
+    moods: zod.array(
+      zod.object({
+        id: zod.string(),
+        name: zod.string(),
+        emoji: zod.string(),
+        description: zod.string(),
+        artists: zod.array(zod.string()),
+        playlistDirection: zod.string(),
+      }),
+    ),
   }),
   ritual: zod.object({
     title: zod.string(),
@@ -155,6 +212,10 @@ export const UpdateDateResponse = zod.object({
   scheduledDate: zod.string().nullish(),
   completed: zod.boolean(),
   completedAt: zod.string().nullish(),
+  sethPhase: zod.number(),
+  elanaPhase: zod.number(),
+  sethRecipeChoice: zod.number().nullish(),
+  elanaVibeChoice: zod.string().nullish(),
 });
 
 /**
