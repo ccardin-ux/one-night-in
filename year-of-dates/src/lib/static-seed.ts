@@ -1028,4 +1028,4 @@ export const CHECKLIST_ITEMS: Record<number, { label: string; phase: number; per
 
 export type ChecklistSeedItem = Omit<ChecklistItem, "id" | "month" | "completed">;
 
-export const STATIC_DATE_PLANS = DATE_PLANS satisfies DatePlan[];
+export const STATIC_DATE_PLANS = DATE_PLANS as DatePlan[];

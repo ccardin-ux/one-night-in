@@ -1,12 +1,76 @@
-import { useListDates, useGetSummary } from "@/lib/static-api";
+import { useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  clearStoredMemories,
+  downloadMemoryBackup,
+  getGetSummaryQueryKey,
+  getListDatesQueryKey,
+  getListFavoritesQueryKey,
+  getListLearningsQueryKey,
+  getListReflectionsQueryKey,
+  importMemoryBackup,
+  useListDates,
+  useGetSummary,
+} from "@/lib/static-api";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { MapPin, Calendar, BookOpen, Heart, Star, ChevronRight } from "lucide-react";
+import { MapPin, Calendar, BookOpen, Heart, Star, ChevronRight, Download, Upload, Trash2 } from "lucide-react";
 import { cn, getMonthGradient } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Dashboard() {
   const { data: dates, isLoading: datesLoading } = useListDates();
   const { data: summary } = useGetSummary();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const importInputRef = useRef<HTMLInputElement>(null);
+  const [isImporting, setIsImporting] = useState(false);
+
+  const refreshStoredData = () => {
+    [
+      getListDatesQueryKey(),
+      getGetSummaryQueryKey(),
+      getListFavoritesQueryKey(),
+      getListReflectionsQueryKey(),
+      getListLearningsQueryKey(),
+    ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
+  };
+
+  const handleExport = () => {
+    downloadMemoryBackup();
+    toast({ description: "Memory backup downloaded" });
+  };
+
+  const handleImport = async (file: File | undefined) => {
+    if (!file) return;
+
+    try {
+      setIsImporting(true);
+      importMemoryBackup(JSON.parse(await file.text()));
+      refreshStoredData();
+      toast({ description: "Memories imported" });
+    } catch (error) {
+      toast({
+        title: "Import failed",
+        description: error instanceof Error ? error.message : "Choose a valid backup file.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsImporting(false);
+      if (importInputRef.current) importInputRef.current.value = "";
+    }
+  };
+
+  const handleClearData = () => {
+    const confirmed = window.confirm(
+      "Delete all saved schedules, checklist progress, favorites, memories, and learnings from this browser?",
+    );
+
+    if (!confirmed) return;
+    clearStoredMemories();
+    refreshStoredData();
+    toast({ description: "Test data cleared from this browser" });
+  };
 
   if (datesLoading) {
     return (
@@ -176,6 +240,54 @@ export default function Dashboard() {
               </motion.div>
             );
           })}
+        </div>
+      </div>
+
+      {/* Memory tools */}
+      <div className="border-t border-border bg-background">
+        <div className="max-w-5xl mx-auto px-6 py-8">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="font-serif text-2xl text-foreground">Memory Backup</h2>
+              <p className="text-sm text-muted-foreground mt-1 max-w-xl">
+                Save or restore this browser's memories, favorites, learnings, schedules, and checklist progress.
+              </p>
+              <p className="text-xs text-muted-foreground/80 mt-2 max-w-xl">
+                Your memories stay private on this device unless you export and share a backup file.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={handleExport}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-sm font-sans text-foreground hover:bg-accent transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Export
+              </button>
+              <button
+                onClick={() => importInputRef.current?.click()}
+                disabled={isImporting}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-sm font-sans text-foreground hover:bg-accent transition-colors disabled:opacity-50"
+              >
+                <Upload className="w-4 h-4" />
+                Import
+              </button>
+              <button
+                onClick={handleClearData}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-destructive/25 bg-background text-sm font-sans text-destructive hover:bg-destructive/10 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                Clear Test Data
+              </button>
+              <input
+                ref={importInputRef}
+                type="file"
+                accept="application/json,.json"
+                className="hidden"
+                onChange={(event) => handleImport(event.target.files?.[0])}
+              />
+            </div>
+          </div>
         </div>
       </div>
 

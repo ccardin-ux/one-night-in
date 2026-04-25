@@ -36,9 +36,28 @@ const CHECKLIST_STATE_KEY = `${STORAGE_PREFIX}:checklist`;
 const FAVORITES_KEY = `${STORAGE_PREFIX}:favorites`;
 const REFLECTIONS_KEY = `${STORAGE_PREFIX}:reflections`;
 const LEARNINGS_KEY = `${STORAGE_PREFIX}:learnings`;
+const STORAGE_KEYS = [
+  DATE_STATE_KEY,
+  CHECKLIST_STATE_KEY,
+  FAVORITES_KEY,
+  REFLECTIONS_KEY,
+  LEARNINGS_KEY,
+] as const;
 
 type StoredDateState = Record<number, Partial<UpdateDateBody>>;
 type StoredChecklistState = Record<number, boolean>;
+type MemoryBackup = {
+  app: "year-of-dates";
+  version: 1;
+  exportedAt: string;
+  data: {
+    dateState: StoredDateState;
+    checklistState: StoredChecklistState;
+    favorites: Favorite[];
+    reflections: Reflection[];
+    learnings: Learning[];
+  };
+};
 
 function readStorage<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
@@ -125,6 +144,59 @@ function getSummary(): Summary {
     totalLearnings: getLearnings().length,
     nextScheduledDate: nextScheduled?.scheduledDate ?? null,
   };
+}
+
+function downloadJson(filename: string, data: unknown): void {
+  if (typeof document === "undefined") return;
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json;charset=utf-8",
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+export function createMemoryBackup(): MemoryBackup {
+  return {
+    app: "year-of-dates",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    data: {
+      dateState: getDateState(),
+      checklistState: readStorage<StoredChecklistState>(CHECKLIST_STATE_KEY, {}),
+      favorites: getFavorites(),
+      reflections: getReflections(),
+      learnings: getLearnings(),
+    },
+  };
+}
+
+export function downloadMemoryBackup(): void {
+  const date = new Date().toISOString().slice(0, 10);
+  downloadJson(`year-of-dates-memories-${date}.json`, createMemoryBackup());
+}
+
+export function importMemoryBackup(rawBackup: unknown): void {
+  const backup = rawBackup as Partial<MemoryBackup>;
+
+  if (backup.app !== "year-of-dates" || backup.version !== 1 || !backup.data) {
+    throw new Error("This does not look like a Year of Dates backup file.");
+  }
+
+  writeStorage(DATE_STATE_KEY, backup.data.dateState ?? {});
+  writeStorage(CHECKLIST_STATE_KEY, backup.data.checklistState ?? {});
+  writeStorage(FAVORITES_KEY, backup.data.favorites ?? []);
+  writeStorage(REFLECTIONS_KEY, backup.data.reflections ?? []);
+  writeStorage(LEARNINGS_KEY, backup.data.learnings ?? []);
+}
+
+export function clearStoredMemories(): void {
+  if (typeof window === "undefined") return;
+  STORAGE_KEYS.forEach((key) => window.localStorage.removeItem(key));
 }
 
 export const getListDatesQueryKey = () => ["/api/dates"] as const;
