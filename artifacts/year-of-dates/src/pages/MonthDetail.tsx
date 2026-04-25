@@ -124,6 +124,26 @@ export default function MonthDetail() {
     toast({ description: "Vibe locked in. Time to build that playlist." });
   };
 
+  const handleResetSethChoice = async () => {
+    await updateDate.mutateAsync({
+      month: monthNum,
+      data: { sethRecipeChoice: null, sethPhase: 1 },
+    });
+    queryClient.invalidateQueries({ queryKey: getGetDateQueryKey(monthNum) });
+    queryClient.invalidateQueries({ queryKey: getListDatesQueryKey() });
+    toast({ description: "No worries — pick whichever dish feels right." });
+  };
+
+  const handleResetElanaChoice = async () => {
+    await updateDate.mutateAsync({
+      month: monthNum,
+      data: { elanaVibeChoice: null, elanaPhase: 1 },
+    });
+    queryClient.invalidateQueries({ queryKey: getGetDateQueryKey(monthNum) });
+    queryClient.invalidateQueries({ queryKey: getListDatesQueryKey() });
+    toast({ description: "Vibe reset — choose the one that fits tonight." });
+  };
+
   const handleAdvanceSethPhase = async () => {
     const nextPhase = Math.min((date?.sethPhase ?? 1) + 1, 3);
     await updateDate.mutateAsync({ month: monthNum, data: { sethPhase: nextPhase } });
@@ -339,11 +359,12 @@ export default function MonthDetail() {
                   sethItems={phaseChecklistItems}
                   onToggle={handleToggleChecklist}
                   onAdvance={handleAdvanceSethPhase}
+                  onReset={handleResetSethChoice}
                   isPending={updateDate.isPending}
                 />
               )}
               {sethPhase === 3 && (
-                <SethPhase3 chosenRecipe={chosenRecipe} />
+                <SethPhase3 chosenRecipe={chosenRecipe} onReset={handleResetSethChoice} isPending={updateDate.isPending} />
               )}
             </div>
           </div>
@@ -371,11 +392,12 @@ export default function MonthDetail() {
                   elanaItems={elanaChecklistItems}
                   onToggle={handleToggleChecklist}
                   onAdvance={handleAdvanceElanaPhase}
+                  onReset={handleResetElanaChoice}
                   isPending={updateDate.isPending}
                 />
               )}
               {elanaPhase === 3 && (
-                <ElanaPhase3 chosenMood={chosenMood} />
+                <ElanaPhase3 chosenMood={chosenMood} onReset={handleResetElanaChoice} isPending={updateDate.isPending} />
               )}
             </div>
           </div>
@@ -690,20 +712,33 @@ function SethPhase1({ options, sourcingItems, onChoose, onToggle, isPending }: {
   );
 }
 
-function SethPhase2({ chosenRecipe, sethItems, onToggle, onAdvance, isPending }: {
+function SethPhase2({ chosenRecipe, sethItems, onToggle, onAdvance, onReset, isPending }: {
   chosenRecipe?: RecipeOption;
   sethItems: { id: number; label: string; completed: boolean }[];
   onToggle: (id: number, completed: boolean) => void;
   onAdvance: () => void;
+  onReset: () => void;
   isPending: boolean;
 }) {
   return (
     <div className="space-y-5">
       {chosenRecipe && (
         <div className="rounded-xl bg-stone-50 border border-stone-200 p-4">
-          <p className="text-xs text-stone-500 uppercase tracking-widest font-sans mb-1">Your dish</p>
-          <h3 className="font-serif text-lg text-stone-900">{chosenRecipe.dish}</h3>
-          <p className="text-xs text-stone-500 mt-1 font-sans">{chosenRecipe.prepTime} · {chosenRecipe.difficulty}</p>
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <p className="text-xs text-stone-500 uppercase tracking-widest font-sans mb-1">Your dish</p>
+              <h3 className="font-serif text-lg text-stone-900">{chosenRecipe.dish}</h3>
+              <p className="text-xs text-stone-500 mt-1 font-sans">{chosenRecipe.prepTime} · {chosenRecipe.difficulty}</p>
+            </div>
+            <button
+              onClick={onReset}
+              disabled={isPending}
+              data-testid="button-reset-seth"
+              className="shrink-0 text-xs text-stone-400 hover:text-stone-600 font-sans underline underline-offset-2 transition-colors disabled:opacity-50"
+            >
+              Change choice
+            </button>
+          </div>
         </div>
       )}
 
@@ -744,15 +779,27 @@ function SethPhase2({ chosenRecipe, sethItems, onToggle, onAdvance, isPending }:
   );
 }
 
-function SethPhase3({ chosenRecipe }: { chosenRecipe?: RecipeOption }) {
+function SethPhase3({ chosenRecipe, onReset, isPending }: { chosenRecipe?: RecipeOption; onReset: () => void; isPending: boolean }) {
   return (
     <div className="space-y-4">
       <div className="rounded-xl bg-amber-50 border border-amber-200 p-4">
-        <p className="text-xs text-amber-700 uppercase tracking-widest font-sans mb-1">Tonight you're making</p>
-        <h3 className="font-serif text-xl text-stone-900">{chosenRecipe?.dish ?? "Your chosen dish"}</h3>
-        {chosenRecipe && (
-          <p className="text-xs text-amber-700/70 mt-1 font-sans">{chosenRecipe.cuisine} · {chosenRecipe.difficulty} · {chosenRecipe.prepTime}</p>
-        )}
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <p className="text-xs text-amber-700 uppercase tracking-widest font-sans mb-1">Tonight you're making</p>
+            <h3 className="font-serif text-xl text-stone-900">{chosenRecipe?.dish ?? "Your chosen dish"}</h3>
+            {chosenRecipe && (
+              <p className="text-xs text-amber-700/70 mt-1 font-sans">{chosenRecipe.cuisine} · {chosenRecipe.difficulty} · {chosenRecipe.prepTime}</p>
+            )}
+          </div>
+          <button
+            onClick={onReset}
+            disabled={isPending}
+            data-testid="button-reset-seth"
+            className="shrink-0 text-xs text-amber-600 hover:text-amber-800 font-sans underline underline-offset-2 transition-colors disabled:opacity-50"
+          >
+            Change choice
+          </button>
+        </div>
       </div>
       <p className="text-sm text-muted-foreground font-sans leading-relaxed">
         Cook with intention. Don't rush. Pour yourself something good before you start. The process is part of the date — not a chore to get through before it.
@@ -808,20 +855,33 @@ function ElanaPhase1({ moods, onChoose, isPending }: {
   );
 }
 
-function ElanaPhase2({ chosenMood, elanaItems, onToggle, onAdvance, isPending }: {
+function ElanaPhase2({ chosenMood, elanaItems, onToggle, onAdvance, onReset, isPending }: {
   chosenMood?: MoodOption;
   elanaItems: { id: number; label: string; completed: boolean }[];
   onToggle: (id: number, completed: boolean) => void;
   onAdvance: () => void;
+  onReset: () => void;
   isPending: boolean;
 }) {
   return (
     <div className="space-y-5">
       {chosenMood && (
         <div className="rounded-xl bg-rose-50 border border-rose-200 p-4">
-          <p className="text-xs text-rose-600 uppercase tracking-widest font-sans mb-1">Tonight's vibe</p>
-          <h3 className="font-serif text-lg text-rose-900">{chosenMood.emoji} {chosenMood.name}</h3>
-          <p className="text-xs text-rose-600/70 mt-1 font-sans italic">{chosenMood.playlistDirection}</p>
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <p className="text-xs text-rose-600 uppercase tracking-widest font-sans mb-1">Tonight's vibe</p>
+              <h3 className="font-serif text-lg text-rose-900">{chosenMood.emoji} {chosenMood.name}</h3>
+              <p className="text-xs text-rose-600/70 mt-1 font-sans italic">{chosenMood.playlistDirection}</p>
+            </div>
+            <button
+              onClick={onReset}
+              disabled={isPending}
+              data-testid="button-reset-elana"
+              className="shrink-0 text-xs text-rose-400 hover:text-rose-600 font-sans underline underline-offset-2 transition-colors disabled:opacity-50"
+            >
+              Change choice
+            </button>
+          </div>
         </div>
       )}
 
@@ -884,15 +944,27 @@ function ElanaPhase2({ chosenMood, elanaItems, onToggle, onAdvance, isPending }:
   );
 }
 
-function ElanaPhase3({ chosenMood }: { chosenMood?: MoodOption }) {
+function ElanaPhase3({ chosenMood, onReset, isPending }: { chosenMood?: MoodOption; onReset: () => void; isPending: boolean }) {
   return (
     <div className="space-y-4">
       <div className="rounded-xl bg-rose-50 border border-rose-200 p-4">
-        <p className="text-xs text-rose-600 uppercase tracking-widest font-sans mb-1">Tonight's vibe</p>
-        <h3 className="font-serif text-xl text-rose-900">{chosenMood ? `${chosenMood.emoji} ${chosenMood.name}` : "Your chosen vibe"}</h3>
-        {chosenMood && (
-          <p className="text-xs text-rose-600/70 mt-1 font-sans italic">{chosenMood.playlistDirection}</p>
-        )}
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <p className="text-xs text-rose-600 uppercase tracking-widest font-sans mb-1">Tonight's vibe</p>
+            <h3 className="font-serif text-xl text-rose-900">{chosenMood ? `${chosenMood.emoji} ${chosenMood.name}` : "Your chosen vibe"}</h3>
+            {chosenMood && (
+              <p className="text-xs text-rose-600/70 mt-1 font-sans italic">{chosenMood.playlistDirection}</p>
+            )}
+          </div>
+          <button
+            onClick={onReset}
+            disabled={isPending}
+            data-testid="button-reset-elana"
+            className="shrink-0 text-xs text-rose-400 hover:text-rose-600 font-sans underline underline-offset-2 transition-colors disabled:opacity-50"
+          >
+            Change choice
+          </button>
+        </div>
       </div>
       <p className="text-sm text-muted-foreground font-sans leading-relaxed">
         Your playlist is ready. Hit play before Seth starts cooking — let the room settle into the feeling before anything happens. You set the tone. That's the power.
