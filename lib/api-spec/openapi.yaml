@@ -480,6 +480,10 @@ components:
         elanaVibeChoice:
           type: string
           nullable: true
+        funFacts:
+          type: array
+          items:
+            type: string
       required:
         - month
         - monthName
@@ -499,6 +503,7 @@ components:
         - completed
         - sethPhase
         - elanaPhase
+        - funFacts
 
     UpdateDateBody:
       type: object

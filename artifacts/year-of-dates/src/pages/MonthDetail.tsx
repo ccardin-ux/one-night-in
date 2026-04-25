@@ -21,7 +21,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, MapPin, Clock, DollarSign, ChefHat, Music, Flame,
   MessageCircle, Sparkles, Navigation, CheckSquare, Square,
-  Calendar, CalendarPlus, Star, Heart, BookOpen, Check, X, ChevronRight
+  Calendar, CalendarPlus, Star, Heart, BookOpen, Check, X, ChevronRight, Leaf
 } from "lucide-react";
 import { Link } from "wouter";
 import { cn, getMonthGradient, generateGoogleCalendarUrl, downloadICS } from "@/lib/utils";
@@ -198,6 +198,7 @@ export default function MonthDetail() {
   const activity = date.activity as { title: string; description: string };
   const localAddOn = date.localAddOn as { title: string; description: string };
   const prompts = date.conversationPrompts as string[];
+  const funFacts = (date.funFacts as string[] | undefined) ?? [];
   const gradient = getMonthGradient(monthNum);
 
   const sethPhase = date.sethPhase ?? 1;
@@ -419,6 +420,28 @@ export default function MonthDetail() {
             data-testid="ritual-card"
           />
         </Section>
+
+        {/* Discover */}
+        {funFacts.length > 0 && (
+          <Section title="Discover" icon={Leaf} delay={0.33}>
+            <div className="space-y-3">
+              {funFacts.map((fact, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 * i }}
+                  className="rounded-xl p-4"
+                  style={{ background: "rgba(120, 113, 95, 0.12)", border: "1px solid rgba(120, 113, 95, 0.22)" }}
+                >
+                  <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.82)" }}>
+                    {fact}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </Section>
+        )}
 
         {/* Conversation */}
         <Section title="Conversation" icon={MessageCircle} delay={0.35}>

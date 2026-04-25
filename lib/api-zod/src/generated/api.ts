@@ -73,6 +73,7 @@ export const ListDatesResponseItem = zod.object({
   elanaPhase: zod.number(),
   sethRecipeChoice: zod.number().nullish(),
   elanaVibeChoice: zod.string().nullish(),
+  funFacts: zod.array(zod.string()),
 });
 export const ListDatesResponse = zod.array(ListDatesResponseItem);
 
@@ -140,6 +141,7 @@ export const GetDateResponse = zod.object({
   elanaPhase: zod.number(),
   sethRecipeChoice: zod.number().nullish(),
   elanaVibeChoice: zod.string().nullish(),
+  funFacts: zod.array(zod.string()),
 });
 
 /**
@@ -216,6 +218,7 @@ export const UpdateDateResponse = zod.object({
   elanaPhase: zod.number(),
   sethRecipeChoice: zod.number().nullish(),
   elanaVibeChoice: zod.string().nullish(),
+  funFacts: zod.array(zod.string()),
 });
 
 /**

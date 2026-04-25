@@ -1,4 +1,5 @@
 import { db, datePlansTable, checklistItemsTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 import { logger } from "./logger";
 
 const MOODS = (theme: string, fun: string[], sexy: string[], relaxing: string[], meditative: string[]) => [
@@ -85,12 +86,18 @@ const DATE_PLANS = [
       ),
     },
     ritual: { title: "The Tea Ceremony", description: "Begin the evening by making two cups of matcha together. One person whisks while the other holds the bowl warm. Bow to each other before drinking. Let this signal that tonight is yours." },
+    funFacts: [
+      "Shinrin-yoku (forest bathing) was formalized in Japan in 1982 as an official form of preventive medicine — immersion in forest air measurably lowers cortisol, reduces blood pressure, and increases the immune system's natural killer cells. The forest itself is the prescription.",
+      "Shinto, Japan's indigenous spirituality, holds that kami — sacred spirits — inhabit mountains, rivers, trees, and stones. The natural world is not a backdrop to the divine; it is the divine. Every place has a soul.",
+      "Wabi-sabi, the Japanese aesthetic of imperfection and transience, is itself a spiritual practice. To find a cracked bowl more beautiful than a perfect one is to accept the nature of all things — and of yourself.",
+      "Ikigai, the Japanese concept of a reason for being, describes the intersection of what you love, what you're good at, what the world needs, and what can sustain you. Finding it isn't a goal — it's a lifelong practice of paying attention.",
+    ],
     conversationPrompts: [
-      "What's something about your upbringing that still shapes how you love people today?",
-      "If we could live anywhere in the world for one year, where would you want to go and why?",
-      "What's one thing you want to understand about me that you haven't figured out yet?",
-      "What does a perfect ordinary Tuesday look like to you, five years from now?",
-      "What's something you've never told anyone that you'd feel safe telling me?",
+      "In Japan, the forest itself is considered medicine — a walk among trees can quiet your nervous system and rebuild your immunity. When did nature last genuinely heal something in you?",
+      "Shinto sees the sacred in everything — a river, a rock, a particular quality of afternoon light. What ordinary thing in your daily life feels sacred to you, even if you've never said that word for it?",
+      "Wabi-sabi teaches that a cracked bowl is more beautiful than a perfect one. What's something about yourself — or about us — that you've come to love more because of its imperfection?",
+      "What gives your life meaning in the ikigai sense — the overlap of what you love, what you're good at, what the world needs, and what sustains you? How close are you to living from that center?",
+      "What does stillness feel like for you — is it something you find easily, or something you have to work toward?",
     ],
     activity: { title: "Write Each Other a Haiku", description: "Each of you writes a haiku — three lines, 5-7-5 syllables — about what this first month of marriage has felt like. Read them to each other slowly. Keep them." },
     localAddOn: { title: "Find a Japanese restaurant for dessert", description: "End the night at a local Japanese spot for mochi ice cream or taiyaki. Or make mochi at home together — it's messy and delightful." },
@@ -153,12 +160,18 @@ const DATE_PLANS = [
       ),
     },
     ritual: { title: "Light a Candle, Make a Wish", description: "Before dinner, light a candle together. Each of you speaks one wish for this year of marriage — not out loud if you don't want to. Then light a second candle. Keep them both burning through dinner." },
+    funFacts: [
+      "The Gnawa people of Morocco perform Lila — an all-night healing ceremony where music, trance, and movement are used to draw out grief, illness, and spiritual affliction. The music itself is considered medicine; sound moves what words cannot.",
+      "The argan tree grows only in southwestern Morocco and is called the Tree of Life — it has been harvested by the indigenous Amazigh people for centuries as food, medicine, and ritual offering. Goats famously climb it to eat its fruit.",
+      "In Sufi Islam, which has deep roots in Morocco, dhikr — the repetitive chanting of sacred names — is a path to divine awareness. The body becomes an instrument for transcendence. Repetition becomes a doorway.",
+      "Hammam culture in Morocco is ancient and communal — the ritual of purification through steam and water is both physical and spiritual, a deliberate reset of the body and spirit before major transitions or celebrations.",
+    ],
     conversationPrompts: [
-      "What tradition from your family do you most want to carry into ours?",
-      "What's something you've changed your mind about since we got together?",
-      "When do you feel most seen by me?",
-      "What's a dream you've never said aloud to anyone, that you're willing to say now?",
-      "If we could do one completely spontaneous thing tomorrow, what would it be?",
+      "Gnawa healers of Morocco use music — all night, without stopping — to draw out grief and illness they believe sound can move what words cannot. Has music ever changed something in you that nothing else could reach?",
+      "In Sufi tradition, the repetition of sacred sound becomes a doorway to altered states — the same words over and over until the thinking mind dissolves. Do you have a practice like that, something that gets you out of your head?",
+      "What's something you're carrying right now — some grief, some old pattern, some weight — that you'd like to put down?",
+      "Hammam rituals exist to mark transitions — to arrive somewhere new by first being cleansed. What transition in your life right now feels like it deserves a ritual?",
+      "What does it feel like when you're spiritually aligned — when things are flowing and you feel like yourself? How do you know when you're there?",
     ],
     activity: { title: "Make a Spice Mix Together", description: "Blend your own ras el hanout — combine the spices by hand, talking about what each one smells like and where it takes you. Bottle it and label it with tonight's date." },
     localAddOn: { title: "Find a hammam or Turkish bath", description: "If there's a Turkish bath nearby, book it. Or draw a long bath at home and add rose petals." },
@@ -221,12 +234,18 @@ const DATE_PLANS = [
       ),
     },
     ritual: { title: "The First Toast", description: "Pour two glasses before you begin cooking. Look each other in the eye. One of you proposes a toast — not rehearsed, just honest. Whatever comes up is the right thing." },
+    funFacts: [
+      "Ancient Rome held that nature spirits — numina — inhabited rivers, forests, crossroads, and particular rocks. This animism predates Christianity by centuries and was practiced by ordinary people as a living, daily relationship with the world.",
+      "The cult of Bacchus (Dionysus) treated ritual intoxication — wine drunk in ceremony — as a path to divine ecstasy and the dissolution of the individual self. Pleasure was not escape; it was a form of prayer.",
+      "Southern Italy has a deep tradition of folk healing called guarigione — village healers used plants, prayer, ritual objects, and touch to address what medicine couldn't reach. These practices survived the Inquisition and are still remembered.",
+      "The Pythagoreans founded their school in southern Italy in the 6th century BCE. They believed music had mathematical and spiritual properties — that specific harmonics could heal the body, align the soul, and reveal the hidden order of the universe.",
+    ],
     conversationPrompts: [
-      "What's something that happened in our first months of marriage that surprised you in a good way?",
-      "What's your earliest memory of knowing you loved me?",
-      "If you could go back and tell your younger self one thing about relationships, what would it be?",
-      "What does home mean to you, and are we there yet?",
-      "What's one thing I do that makes you feel deeply cared for?",
+      "The ancient Romans believed nature spirits inhabited rivers and crossroads and ancient trees — that specific places had souls. If you believed the world was inhabited by invisible presences, how would that change how you moved through it?",
+      "Bacchic ritual used wine as a sacrament — a way to dissolve the boundaries between self and world. What does it feel like, for you, when those boundaries loosen a little? What brings that on for you?",
+      "Old Italian folk healers used plants, prayer, and touch to heal what medicine couldn't reach. What do you personally believe can heal things that conventional medicine misses?",
+      "The Pythagoreans believed certain music could align the soul. Is there a piece of music that does something to you that you genuinely can't explain?",
+      "What's a form of pleasure — real, embodied, sensory pleasure — that you want more of in your life?",
     ],
     activity: { title: "Make pasta from scratch together", description: "There's something about making pasta by hand that slows everything down. Measure flour on the counter, make a well, crack the eggs, work the dough. It's tactile, meditative, and a little chaotic." },
     localAddOn: { title: "Find a wine bar for an after-dinner glass", description: "End the night with a glass of something Italian — Barolo, Nero d'Avola, or Prosecco. If you can find a wine bar with outdoor seating, even better." },
@@ -289,12 +308,18 @@ const DATE_PLANS = [
       ),
     },
     ritual: { title: "Apply Henna Together", description: "Order henna cones online. Draw simple patterns on each other's hands — nothing has to be perfect. Let them dry. Talk about what the symbols mean to you." },
+    funFacts: [
+      "Ayurveda, one of the world's oldest medical systems — over 5,000 years old — understands the body as a microcosm of the universe, built from the same elements as the earth. Healing is not fixing; it is realigning.",
+      "The sacred Ganges River is worshipped as a living goddess, Ganga — millions of pilgrims bathe in it every year believing the river can wash away accumulated karma, heal illness, and release the dead into freedom.",
+      "Ancient Vedic texts describe soma, a sacred brew consumed in ritual to touch the divine — scholars believe it may have been a psychedelic mushroom or plant preparation, the original sacrament, drunk before the gods.",
+      "Jyotish — Vedic astrology — sees the birth chart as a map of the soul's journey across multiple lifetimes. It's still consulted across India for major life decisions, treating the stars not as fate but as terrain.",
+    ],
     conversationPrompts: [
-      "What's something about South Asian culture — the food, art, or philosophy — that's always drawn you in?",
-      "When was the last time you felt truly joyful, without any reason to hold back?",
-      "What's something you're afraid of that you've never said to me?",
-      "How do you want us to handle disagreement differently than you've seen it handled before?",
-      "What's a cultural practice or ritual from any tradition that you'd love to bring into our life?",
+      "Ayurveda teaches that healing comes from realigning the elements within us — that illness is fundamentally imbalance, not just biology. What feels out of balance in your life right now, honestly?",
+      "Ancient India's soma rituals used plant medicine to touch the divine — to cross a threshold that ordinary consciousness couldn't reach. Do you believe there are states of experience that everyday life doesn't offer? Have you touched that?",
+      "The Ganges is worshipped as a living goddess — the river itself holds the sacred. Have you ever been to a place that felt genuinely holy, or that held some quality you couldn't explain rationally?",
+      "Vedic astrology sees your birth chart as a map of karma — the soul's accumulated history. Do you believe in anything like that — past lives, destiny, the idea that you're here to learn specific things?",
+      "What's a cultural or spiritual practice — from any tradition — that you'd genuinely want to bring into our life together?",
     ],
     activity: { title: "Watch a Bollywood film together", description: "Pick a classic — Dilwale Dulhania Le Jayenge, Lagaan, or something more recent. Don't take it seriously. Sing along if you can. Dance if the moment calls for it." },
     localAddOn: { title: "Visit an Indian grocery", description: "Source spices and ingredients at a local Indian grocery. Many have recommendations for fresh things you can't find elsewhere." },
@@ -357,12 +382,18 @@ const DATE_PLANS = [
       ),
     },
     ritual: { title: "Light Copal Incense", description: "Copal is the incense of Oaxacan ceremony — sacred, woody, ancient. Light a stick before you begin. Let its smoke fill the room. It signals that this is a different kind of evening." },
+    funFacts: [
+      "Cacao was sacred to the Aztec and Maya — used in ritual offerings, funeral rites, and as currency. In Oaxaca, the cacao ceremony is being revived as a heart-opening practice, using ceremonial-grade chocolate to soften the heart before medicine work.",
+      "Copal incense has been burned in Mesoamerican ceremony for at least 3,000 years. Its smoke is understood to carry prayers to the spirit world and to open portals between the living and the dead.",
+      "Día de los Muertos originated in Oaxaca — it's not mourning, it's reunion. On certain nights, the veil between worlds thins, and the dead are welcomed home with food, music, marigolds, and love.",
+      "Oaxacan curanderos (healers) practice limpia — spiritual cleansing ceremonies using eggs, herbs, and prayer to remove energetic blockages. These practices have continued, largely unchanged, for centuries.",
+    ],
     conversationPrompts: [
-      "What's a family recipe — from anyone in your family — that means something to you?",
-      "What's one story from your childhood that you haven't told me yet?",
-      "If you could have dinner with anyone who's passed away from your family, who would it be and what would you ask them?",
-      "What does generosity mean to you, and who taught it to you?",
-      "What part of your cultural identity do you most want our home to reflect?",
+      "Copal smoke has been used for 3,000 years to carry prayers to the spirit world. If you could send one prayer right now — one message to the universe or to your future self — what would it be?",
+      "Día de los Muertos isn't mourning — it's reunion. The dead are welcomed home, fed, celebrated. How do you think about your relationship with people you've lost? Do any of them feel present in your life?",
+      "Cacao was a sacrament, not a snack — used to open the heart before ceremony. What opens your heart? What helps you drop into a more present, more feeling state?",
+      "Curanderos perform cleansing rituals to remove what doesn't belong — accumulated weight, old grief, things that have outlasted their purpose. What are you ready to release?",
+      "What's something you hope we carry from your family or cultural lineage into the life we're building together?",
     ],
     activity: { title: "Make your own hot sauce", description: "Blend roasted tomatillos, dried chiles, garlic, and cilantro. Season. Bottle it. Write the date on the label. You've made something that will last." },
     localAddOn: { title: "Find a local mezcal or tequila bar", description: "End the night with a proper mezcal tasting — neat, with an orange wedge and sal de gusano if available." },
@@ -425,11 +456,17 @@ const DATE_PLANS = [
       ),
     },
     ritual: { title: "Olive Oil Toast", description: "Before dinner, pour a small dish of good olive oil. Dip bread into it together. One of you says what you're grateful for this month. The other says one thing they're looking forward to." },
+    funFacts: [
+      "The Eleusinian Mysteries were the most sacred rituals in the ancient Greek world — held for 2,000 years, initiates drank a brew called kykeon, believed to contain a psychedelic ergot preparation, to experience death and rebirth firsthand.",
+      "The Oracle at Delphi was considered the navel of the world — a site where Pythia priestesses entered trance states to receive divine guidance. Every major city-state consulted it before war or significant decisions.",
+      "Ancient Greeks practiced incubation — sleeping in sacred temples of Asclepius, the healer — to receive diagnostic dreams. The divine was believed to speak clearly through the sleeping mind.",
+      "The word 'enthusiasm' comes from the Greek entheos — meaning 'filled with a god.' To be enthusiastic was, literally, to be inhabited by something larger than yourself.",
+    ],
     conversationPrompts: [
-      "What does simplicity mean to you in the context of a life well-lived?",
-      "What's a place you've been to that changed how you see the world?",
-      "If we had a whole week with nothing scheduled, how would you want to spend it?",
-      "What's something about how I see the world that you find genuinely surprising or admirable?",
+      "For 2,000 years, the Greeks held secret ceremonies where initiates drank a sacred brew and encountered a genuine experience of death and rebirth — and came away transformed. What would it take for you to approach your own life with that level of intentionality?",
+      "The Oracle at Delphi was consulted before every major decision in the ancient world. If you had access to genuine prophetic guidance right now, what's the one question you'd most want answered?",
+      "Greek dream temples held that the divine speaks through sleep. Do you pay attention to your dreams? Has a dream ever told you something true that your waking mind was avoiding?",
+      "Enthusiasm literally means 'filled with a god' — to be seized by something larger than yourself. What fills you with that? What makes you feel inhabited by something beyond ordinary consciousness?",
       "What kind of old people do you want us to be?",
     ],
     activity: { title: "Learn a few words of Greek together", description: "Spend 20 minutes learning basics — cheers (yamas!), I love you (s'agapo), thank you (efharisto). Then use them throughout dinner." },
@@ -493,12 +530,18 @@ const DATE_PLANS = [
       ),
     },
     ritual: { title: "The Gursha", description: "In Ethiopian culture, gursha is feeding someone from your hand as an expression of love. Feed each other one bite at the beginning of the meal. Do it slowly. Make eye contact." },
+    funFacts: [
+      "Ethiopia is the literal birthplace of coffee — legend says a goat herder named Kaldi noticed his goats dancing after eating berries from a tree. The Ethiopian coffee ceremony (buna) is one of the most sacred social rituals in the world: three rounds, incense burning, full presence.",
+      "The Ethiopian Orthodox Church — one of the oldest in the world — holds a mystical tradition that includes the Kebra Nagast, a sacred text claiming the Ark of the Covenant was brought to Aksum, Ethiopia, where it remains to this day.",
+      "The bones of 'Lucy' (Australopithecus afarensis) — our earliest known human ancestor — were found in the Afar desert of Ethiopia and date to 3.2 million years ago. You are eating food from the literal cradle of humanity tonight.",
+      "Ge'ez, the ancient liturgical language of the Ethiopian church, is still used in religious ceremony today — a 2,000-year-old language kept alive entirely by faith, song, and devotion.",
+    ],
     conversationPrompts: [
-      "What's something about how your family expressed love that you want to carry forward?",
-      "What does it mean to you to be truly generous with another person?",
-      "What's an assumption you've made about me that turned out to be wrong?",
-      "What's something that consistently brings you joy that has nothing to do with achievement?",
-      "What do you think we'll be talking about at this same table in 30 years?",
+      "Ethiopia is the birthplace of our species — 'Lucy' lived here 3.2 million years ago. When you let that depth of time land, how does it make you feel about your own small life? Does it shrink things, or does it open them?",
+      "The Ethiopian coffee ceremony requires three full rounds and cannot be rushed — its explicit purpose is to create unhurried presence with the people you love. What would it look like in your life to make more time for that kind of deliberate, uninterrupted presence?",
+      "Ethiopian tradition holds that the Ark of the Covenant — the holiest object in the world — is in a small chapel in Aksum, watched over by a single monk. What do you think the sacred is? Is it a place? An object? A quality of attention?",
+      "The Ge'ez language has been kept alive for 2,000 years because it's sacred enough to protect. What in your own lineage — a language, a practice, a story — feels worth preserving and passing forward?",
+      "What's something you believe about the nature of the universe — the really big picture — that you've never quite said out loud?",
     ],
     activity: { title: "Learn the Ethiopian coffee ceremony", description: "Ethiopia is the birthplace of coffee. Look up the traditional ceremony — roasting, grinding, multiple rounds. Make coffee together slowly and deliberately. Talk about what rituals mean in your life." },
     localAddOn: { title: "Find an Ethiopian restaurant", description: "Ethiopian food is best when someone else made the injera. Find a good local spot for a second dinner or dessert course." },
@@ -561,12 +604,18 @@ const DATE_PLANS = [
       ),
     },
     ritual: { title: "Wai Each Other", description: "The Thai greeting is a bow with hands pressed together in prayer position. At the start of the evening, wai each other — a small bow, hands at heart center. A gesture of respect and presence." },
+    funFacts: [
+      "Thailand's forest monk tradition (phra thudong) involves wandering monks who live entirely in the forest, sleeping under trees and practicing deep meditation — the forest itself is understood as a vehicle for enlightenment.",
+      "The Bodhi tree (Bo tree) — under which the Buddha achieved enlightenment — is sacred throughout Buddhist Asia. Cuttings from the original tree have been planted in monasteries around the world, each considered spiritually connected to the source.",
+      "Thai Buddhism incorporates animism — phi (spirits) are believed to inhabit trees, rivers, homes, and land. Spirit houses (san phra phum) are placed outside every building to honor the spirits of the place.",
+      "Muay Thai, Thailand's ancient martial art, began as a form of moving meditation and spiritual preparation — practitioners perform the Wai Kru ritual before every fight to honor teachers and invoke divine protection.",
+    ],
     conversationPrompts: [
-      "What's something about Buddhist ideas — mindfulness, impermanence, nonattachment — that resonates with you?",
-      "What's a belief you hold about the world that most people in your life would find surprising?",
-      "When do you feel most like yourself?",
-      "What's a fear you've been carrying that you're ready to put down?",
-      "What would you do with your life if you knew you couldn't fail?",
+      "Thai forest monks practice an entire spiritual life through the simple act of walking slowly through trees — the forest is the practice. What does your relationship to slowness look like? Is it something you seek out, or something you resist?",
+      "In Thai animism, spirits inhabit the trees, the rivers, the land itself — and you honor them with offerings. If you believed the natural world was alive and aware, what would you offer it? What would you want to say?",
+      "The Bodhi tree under which the Buddha sat is considered spiritually potent across centuries — its cuttings carry something forward. What do you feel has been passed to you — from a person, a lineage, a place — that carries real weight?",
+      "What's a fear you've been carrying that you're genuinely ready to put down?",
+      "What would you do differently if you knew you couldn't fail and no one was watching?",
     ],
     activity: { title: "Make a Thai iced tea together", description: "Thai iced tea is a beautiful orange color and deeply satisfying. Brew the tea, add condensed milk, pour over ice. Make two and clink glasses. It's simple and feels like a treat." },
     localAddOn: { title: "Find a Thai massage studio", description: "Thai massage is one of the world's great physical arts. If there's a reputable studio nearby, book a couples session after dinner. You'll feel like new people." },
@@ -629,12 +678,18 @@ const DATE_PLANS = [
       ),
     },
     ritual: { title: "The Aperitif Hour", description: "Pour two glasses of Kir — white wine with a splash of cassis. Sit together before any cooking happens. No phones. No plans. Just drink and talk. The French call this l'apéro, and it's sacred." },
+    funFacts: [
+      "The Cathars of southern France, a medieval mystical sect, believed the material world was an illusion and that the soul was on a journey toward pure spirit. They practiced radical simplicity and believed in reincarnation — and were entirely wiped out in a crusade in the 13th century.",
+      "The truffle grows underground in complete darkness, requiring a living symbiosis with oak tree roots — it cannot exist alone. Medieval healers called it 'earth medicine' and attributed regenerative properties to it. It is, literally, a product of relationship.",
+      "France is home to the largest concentration of megalithic standing stones in the world — the Carnac stones of Brittany, over 3,000 stones in precise alignments, placed by a pre-Celtic people around 4,500 BCE. Their purpose remains genuinely unknown.",
+      "Michel de Montaigne, the 16th-century French philosopher, invented the personal essay as an act of radical self-inquiry — he sat alone in a tower for years, writing honestly about what he found when he paid attention to his own experience. This was considered strange.",
+    ],
     conversationPrompts: [
-      "What's something about the French approach to life — pleasure, leisure, beauty — that you want more of in ours?",
-      "What's the most romantic thing anyone has ever done for you?",
-      "What does luxury mean to you? Is it a feeling? A thing? A way of time?",
-      "What's a part of your personality that you've been holding back in our relationship?",
-      "If we had a home in Paris for a summer, what would our days look like?",
+      "The Cathars believed the material world was a kind of beautiful trap and that the soul was on a long journey toward pure spirit. What's your relationship to the material world — do you feel at home in it, or is there some part of you always reaching for something beyond it?",
+      "The truffle grows only in darkness, only in partnership with an oak — it literally cannot exist alone. What's something in your life that has only grown because of a specific relationship, a specific closeness with another person?",
+      "Montaigne's whole project was honest self-observation — to sit alone and tell the truth about what he found inside himself. What's something honest you've observed about yourself recently, something your waking mind had been quietly avoiding?",
+      "What does pleasure mean to you, spiritually? Is feeling good a path toward something, or is it already the thing?",
+      "What's a part of yourself that you've been holding back — from me, from the world, from yourself?",
     ],
     activity: { title: "Make crêpes together", description: "Crêpes are simple and endlessly satisfying — thin, golden, filled with Nutella and banana, or savory with gruyère, egg, and spinach. Make a batch and eat them standing at the stove, taking turns." },
     localAddOn: { title: "Find a French bistro or wine bar", description: "After dinner, find a local wine bar or French bistro for a digestif — Calvados, Armagnac, or a final glass of Burgundy. Sit close together." },
@@ -697,12 +752,18 @@ const DATE_PLANS = [
       ),
     },
     ritual: { title: "Olive Oil and Bread", description: "Pour a small bowl of the best olive oil you have. Tear bread and dip together before anything else happens. In Israeli culture, the table begins before the meal. Say one thing you're grateful for tonight. Then begin." },
+    funFacts: [
+      "Kabbalah, the Jewish mystical tradition, describes the universe as ten interconnected spheres of divine energy (the Sefirot) — a living map of consciousness and creation. It has influenced Sufism, Carl Jung, and almost every Western mystical tradition that followed.",
+      "The desert surrounding Israel — the Negev and Sinai — has been used as a space for spiritual transformation for thousands of years. Moses, Jesus, and Mohammed all had their central visionary experiences in desert landscapes. Silence, heat, and emptiness are the oldest medicine.",
+      "Some olive trees in Israel are over 2,000 years old and still bearing fruit. The olive branch carried by the dove to Noah was the first sign that the earth was habitable again. In Jewish tradition, to tend an olive tree is to participate in something older than any living memory.",
+      "Israel is one of the only countries in the world to have reversed deforestation — it has more trees today than it did 100 years ago, planted tree by tree through collective national effort. An act of restoration as an act of prayer.",
+    ],
     conversationPrompts: [
-      "Tel Aviv was built on sand dunes in 1909 — a city conjured from almost nothing in just over a century. What's something you've built, or want to build, that feels like that kind of act of will?",
-      "Israel has more trees today than it did 100 years ago — one of the only countries in the world to have reforested itself. What's something in your life you've slowly, quietly been rebuilding?",
-      "You're both drawn to nature, the elements, the idea that the earth is alive and worth paying attention to. When do you feel most connected to that — to something bigger than daily life?",
-      "If you could design a ritual that brought you both back to the earth — something seasonal, something intentional, something that marks time — what would it look like?",
-      "What does the word 'sacred' mean to you? Is there a place, a practice, a moment that holds that feeling for you?",
+      "Kabbalah describes the universe as ten interconnected spheres of divine energy — a living map of how consciousness moves through the world and through us. If you could map your own inner life that way — the qualities that live in you — what would your map look like?",
+      "Moses, Jesus, and Mohammed all went to the desert to be broken open by silence. Do you have a place, or a practice, where silence does something to you — where it's more than just quiet?",
+      "Some olive trees here are 2,000 years old and still bearing fruit. What in your life do you want to tend carefully enough that it outlasts you?",
+      "If you could design a ritual that brought you both back to the earth — something seasonal, something that marks time, something genuinely sacred — what would it look like?",
+      "What does the word 'sacred' mean to you, in your actual experience — not as a concept, but as something you've felt?",
     ],
     activity: { title: "Make halva together", description: "Halva is one of the oldest sweets in the world — sesame paste, sugar, and time. It comes in countless variations across the Middle East. Find a recipe and make a simple version at home. It's meditative, a little alchemical, and deeply good." },
     localAddOn: { title: "Find an Israeli or Middle Eastern restaurant", description: "Look for a spot with good hummus and mezze — the kind where the food is the whole point. If you can find a place with outdoor seating, even better." },
@@ -765,12 +826,18 @@ const DATE_PLANS = [
       ),
     },
     ritual: { title: "The Pisco Sour Toast", description: "Make two pisco sours — pisco, lime juice, simple syrup, egg white, Angostura bitters. Shake hard. Pour carefully. Toast to one thing you've built together in the first eleven months." },
+    funFacts: [
+      "The San Pedro cactus (huachuma) has been used in Andean ceremony for at least 3,500 years — longer than almost any known plant medicine tradition on earth. It's considered a master teacher plant, used to access healing, vision, and direct contact with the sacred.",
+      "Pachamama — Mother Earth — is still actively revered across the Andes. Despacho ceremonies involve intricate bundles of flowers, food, and sacred objects offered to her at moments of transition. The earth is understood as a living, feeling presence who can receive and give.",
+      "The Andean concept of Sumak Kawsay (Buen Vivir) is a philosophy of life organized not around accumulation but around harmony — with community, with the natural world, and with oneself. It has influenced several South American constitutions.",
+      "Ayahuasca — the vine of souls — has been used in Amazonian healing for thousands of years as a sacrament. The ceremony is understood as surgery on the soul, guided by a trained curandero, used to address trauma, illness, and spiritual disconnection.",
+    ],
     conversationPrompts: [
-      "What's something we've built together this year that you didn't expect?",
-      "What has been the hardest moment so far, and what did it teach you?",
-      "What's a part of yourself you feel you've found — or rediscovered — since we got married?",
-      "What's one thing you want to do differently next year?",
-      "What's the best thing about being married to me, in your honest opinion?",
+      "The Andean tradition describes certain plants as 'teacher plants' — that they carry intelligence, and that working with them is a form of learning that cannot happen any other way. Do you believe the natural world holds wisdom we don't fully understand? Have you ever felt that?",
+      "Pachamama is understood as a living, conscious being — the earth as a mother who can be wounded or grateful. When you think about your relationship to the planet — really think about it — what do you feel?",
+      "Sumak Kawsay — 'good living' — organizes a life around harmony rather than accumulation. How would your life look different if that were truly your organizing principle?",
+      "This is our eleventh month together. What's something about you that I know now that I couldn't have known at the beginning?",
+      "What's the most alive you've ever felt? What were you doing, and what does that tell you about what you actually need?",
     ],
     activity: { title: "Design our first anniversary date", description: "Spend part of the evening planning month 12 together — your one-year celebration. Where do you want to go? What do you want to do? Make a plan, even if it's rough." },
     localAddOn: { title: "Find a Peruvian restaurant", description: "Peruvian food has had a global moment — there may be a restaurant nearby. If so, go for ceviche at the bar." },
@@ -833,12 +900,18 @@ const DATE_PLANS = [
       ),
     },
     ritual: { title: "Write Each Other a Letter", description: "Before dinner, separately write a short letter — what this year meant to you, what you learned about the other person, what you're grateful for. Read them to each other slowly, over the first glass of wine." },
+    funFacts: [
+      "Every human culture that has ever existed has developed rituals to mark the passage of time — solstice ceremonies, harvest festivals, new year celebrations. The need to make meaning out of transitions is not cultural. It is biological.",
+      "The word 'anniversary' comes from the Latin annus (year) and versare (to turn) — a year anniversary is the completion of a full turn, a circle back to the beginning. You have made a complete revolution around the sun together.",
+      "In many indigenous traditions, one year of marriage is considered the completion of the first real cycle — the couple having moved through all four seasons together. Only after that can the full shape of the union be understood.",
+      "Ichigo ichie — the Japanese concept of 'this moment, once' — holds that every shared experience will never happen in precisely this way again. To be fully present is the deepest act of love available to a human being.",
+    ],
     conversationPrompts: [
-      "What's the thing you'll remember most about our first year of marriage?",
-      "What's something I did this year that you will never forget?",
-      "What's the most important thing you learned about yourself?",
-      "What do you want our second year to feel like?",
-      "What are you most excited to build together in the years ahead?",
+      "You've just completed your first full turn around the sun together. In many traditions, this is when the real marriage begins — the infatuation phase is over, and the actual choice starts. What are you choosing, now that you know more?",
+      "Ichigo ichie: this exact moment — this version of us, in this room, on this night — will never exist again. What do you want to say to each other right now, in this specific moment, that you might not say when life gets busy again?",
+      "What's the single most important thing you learned about yourself this year?",
+      "What's the one thing you most want to build in year two — a practice, a place, a way of being together?",
+      "What are you grateful for, in the most specific, honest terms you can find?",
     ],
     activity: { title: "Make a time capsule", description: "Write down three things each: one thing you hope is true in five years, one thing you're most proud of this year, and one word that describes your marriage right now. Seal it. Open it on your fifth anniversary." },
     localAddOn: { title: "Go somewhere that feels like yours", description: "A restaurant where you had your first date, a bar where you fell in love with each other, a neighborhood that means something. Go back. Mark the year." },
@@ -961,6 +1034,18 @@ export async function seed() {
     const dinner = firstRow.dinner as Record<string, unknown>;
     const hasNewFormat = Array.isArray(dinner?.options);
     if (hasNewFormat) {
+      const existingFunFacts = firstRow.funFacts as unknown[];
+      const missingFunFacts = !existingFunFacts || existingFunFacts.length === 0;
+      if (missingFunFacts) {
+        logger.info("Date plans exist but funFacts are missing — updating content for all 12 months...");
+        for (const plan of DATE_PLANS) {
+          await db
+            .update(datePlansTable)
+            .set({ funFacts: plan.funFacts, conversationPrompts: plan.conversationPrompts })
+            .where(eq(datePlansTable.month, plan.month));
+        }
+        logger.info("Content update complete — funFacts and conversation prompts refreshed");
+      }
       const firstChecklist = await db.select().from(checklistItemsTable).limit(1);
       const checklistHasPersonData = firstChecklist.length > 0 && firstChecklist[0].person !== "both";
       if (checklistHasPersonData || firstChecklist.length === 0) {
@@ -974,7 +1059,7 @@ export async function seed() {
           }
           logger.info("Checklist seed complete");
         } else {
-          logger.info("Seed data already exists in new format with phase/person data, skipping");
+          logger.info("Seed data already exists in new format, skipping");
         }
         return;
       }

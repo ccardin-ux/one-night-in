@@ -34,4 +34,5 @@ export interface DatePlan {
   elanaPhase: number;
   sethRecipeChoice?: number | null;
   elanaVibeChoice?: string | null;
+  funFacts: string[];
 }

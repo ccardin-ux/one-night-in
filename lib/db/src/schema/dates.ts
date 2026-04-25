@@ -25,6 +25,7 @@ export const datePlansTable = pgTable("date_plans", {
   elanaPhase: integer("elana_phase").notNull().default(1),
   sethRecipeChoice: integer("seth_recipe_choice"),
   elanaVibeChoice: text("elana_vibe_choice"),
+  funFacts: jsonb("fun_facts").notNull().default([]),
 });
 
 export const insertDatePlanSchema = createInsertSchema(datePlansTable);
