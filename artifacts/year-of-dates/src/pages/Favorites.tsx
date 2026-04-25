@@ -14,9 +14,9 @@ const MONTH_NAMES = ["", "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"];
 
 const TYPE_CONFIG = {
-  ritual: { label: "Rituals", icon: Flame, color: "text-amber-600 bg-amber-50 border-amber-200" },
-  activity: { label: "Activities", icon: Sparkles, color: "text-violet-600 bg-violet-50 border-violet-200" },
-  prompt: { label: "Prompts", icon: MessageCircle, color: "text-blue-600 bg-blue-50 border-blue-200" },
+  ritual: { label: "Rituals", singularLabel: "Ritual", icon: Flame, color: "text-amber-600 bg-amber-50 border-amber-200" },
+  activity: { label: "Activities", singularLabel: "Activity", icon: Sparkles, color: "text-violet-600 bg-violet-50 border-violet-200" },
+  prompt: { label: "Prompts", singularLabel: "Prompt", icon: MessageCircle, color: "text-blue-600 bg-blue-50 border-blue-200" },
 };
 
 export default function Favorites() {
@@ -111,7 +111,7 @@ export default function Favorites() {
                             "text-xs px-2.5 py-1 rounded-full border font-sans",
                             config.color
                           )}>
-                            {config.label.slice(0, -1)}
+                            {config.singularLabel}
                           </span>
                           <span className="text-xs text-muted-foreground font-sans">
                             from {MONTH_NAMES[fav.sourceMonth]}

@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   clearStoredMemories,
+  downloadKeepsake,
   downloadMemoryBackup,
   getGetSummaryQueryKey,
   getListDatesQueryKey,
@@ -14,7 +15,7 @@ import {
 } from "@/lib/static-api";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { MapPin, Calendar, BookOpen, Heart, Star, ChevronRight, Download, Upload, Trash2 } from "lucide-react";
+import { MapPin, Calendar, BookOpen, Heart, Star, ChevronRight, Download, Upload, Trash2, FileText } from "lucide-react";
 import { cn, getMonthGradient } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
@@ -25,6 +26,8 @@ export default function Dashboard() {
   const { toast } = useToast();
   const importInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const showTestingTools =
+    typeof window !== "undefined" && new URLSearchParams(window.location.search).has("test");
 
   const refreshStoredData = () => {
     [
@@ -39,6 +42,11 @@ export default function Dashboard() {
   const handleExport = () => {
     downloadMemoryBackup();
     toast({ description: "Memory backup downloaded" });
+  };
+
+  const handleKeepsake = () => {
+    downloadKeepsake();
+    toast({ description: "Keepsake downloaded" });
   };
 
   const handleImport = async (file: File | undefined) => {
@@ -250,10 +258,10 @@ export default function Dashboard() {
             <div>
               <h2 className="font-serif text-2xl text-foreground">Memory Backup</h2>
               <p className="text-sm text-muted-foreground mt-1 max-w-xl">
-                Save or restore this browser's memories, favorites, learnings, schedules, and checklist progress.
+                Back up private data for restore, or download a readable keepsake to print or save.
               </p>
               <p className="text-xs text-muted-foreground/80 mt-2 max-w-xl">
-                Your memories stay private on this device unless you export and share a backup file.
+                Your memories stay private on this device unless you export and share a backup or keepsake file.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -262,7 +270,14 @@ export default function Dashboard() {
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-sm font-sans text-foreground hover:bg-accent transition-colors"
               >
                 <Download className="w-4 h-4" />
-                Export
+                Backup Memories
+              </button>
+              <button
+                onClick={handleKeepsake}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-sm font-sans text-foreground hover:bg-accent transition-colors"
+              >
+                <FileText className="w-4 h-4" />
+                Download Keepsake
               </button>
               <button
                 onClick={() => importInputRef.current?.click()}
@@ -270,15 +285,17 @@ export default function Dashboard() {
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-sm font-sans text-foreground hover:bg-accent transition-colors disabled:opacity-50"
               >
                 <Upload className="w-4 h-4" />
-                Import
+                Restore Backup
               </button>
-              <button
-                onClick={handleClearData}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-destructive/25 bg-background text-sm font-sans text-destructive hover:bg-destructive/10 transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-                Clear Test Data
-              </button>
+              {showTestingTools && (
+                <button
+                  onClick={handleClearData}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-destructive/25 bg-background text-sm font-sans text-destructive hover:bg-destructive/10 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Clear Test Data
+                </button>
+              )}
               <input
                 ref={importInputRef}
                 type="file"
