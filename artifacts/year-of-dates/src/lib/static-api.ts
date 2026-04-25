@@ -160,6 +160,35 @@ function downloadJson(filename: string, data: unknown): void {
   URL.revokeObjectURL(url);
 }
 
+function downloadHtml(filename: string, html: string): void {
+  if (typeof document === "undefined") return;
+
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function formatDate(value: string): string {
+  return new Date(value).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 export function createMemoryBackup(): MemoryBackup {
   return {
     app: "year-of-dates",
@@ -178,6 +207,110 @@ export function createMemoryBackup(): MemoryBackup {
 export function downloadMemoryBackup(): void {
   const date = new Date().toISOString().slice(0, 10);
   downloadJson(`year-of-dates-memories-${date}.json`, createMemoryBackup());
+}
+
+export function downloadKeepsake(): void {
+  const dates = getDates();
+  const favorites = getFavorites();
+  const reflections = getReflections();
+  const learnings = getLearnings();
+  const completedDates = dates.filter((date) => date.completed);
+
+  const monthName = (month: number) =>
+    dates.find((date) => date.month === month)?.monthName ?? `Month ${month}`;
+
+  const sections = [
+    reflections.length
+      ? `<section><h2>Memories</h2>${reflections
+          .slice()
+          .reverse()
+          .map(
+            (reflection) => `
+              <article>
+                <p class="eyebrow">${escapeHtml(monthName(reflection.month))} &middot; ${"★".repeat(reflection.rating)}</p>
+                <h3>${escapeHtml(reflection.highlight)}</h3>
+                <p>${escapeHtml(reflection.memory)}</p>
+                <p><strong>What we learned:</strong> ${escapeHtml(reflection.learnedAboutEachOther)}</p>
+                <p class="date">${escapeHtml(formatDate(reflection.createdAt))}</p>
+              </article>
+            `,
+          )
+          .join("")}</section>`
+      : "",
+    learnings.length
+      ? `<section><h2>What We Learned</h2>${learnings
+          .slice()
+          .reverse()
+          .map(
+            (learning) => `
+              <article>
+                <p class="eyebrow">${escapeHtml(monthName(learning.month))} &middot; ${escapeHtml(learning.about)}</p>
+                <p>${escapeHtml(learning.content)}</p>
+              </article>
+            `,
+          )
+          .join("")}</section>`
+      : "",
+    favorites.length
+      ? `<section><h2>Saved Favorites</h2>${favorites
+          .map(
+            (favorite) => `
+              <article>
+                <p class="eyebrow">${escapeHtml(favorite.type)} from ${escapeHtml(monthName(favorite.sourceMonth))}</p>
+                <p>${escapeHtml(favorite.content)}</p>
+              </article>
+            `,
+          )
+          .join("")}</section>`
+      : "",
+    completedDates.length
+      ? `<section><h2>Completed Dates</h2>${completedDates
+          .map(
+            (date) => `
+              <article>
+                <p class="eyebrow">${escapeHtml(date.monthName)} &middot; ${escapeHtml(date.destination)}</p>
+                <h3>${escapeHtml(date.theme)}</h3>
+                <p>${escapeHtml(date.tagline)}</p>
+              </article>
+            `,
+          )
+          .join("")}</section>`
+      : "",
+  ].join("");
+
+  const emptyState = sections.trim()
+    ? ""
+    : "<section><article><p>No memories have been saved yet.</p></article></section>";
+
+  const html = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Year of Dates Keepsake</title>
+  <style>
+    body { margin: 0; background: #f7f3ec; color: #2b2420; font-family: Georgia, serif; line-height: 1.6; }
+    main { max-width: 760px; margin: 0 auto; padding: 48px 24px; }
+    h1 { font-size: 44px; font-weight: 400; margin: 0 0 8px; }
+    h2 { border-top: 1px solid #ded4c9; font-size: 28px; font-weight: 400; margin: 40px 0 18px; padding-top: 28px; }
+    h3 { font-size: 22px; font-weight: 400; margin: 0 0 8px; }
+    article { background: #fffaf3; border: 1px solid #e3d8cc; border-radius: 14px; margin: 14px 0; padding: 22px; }
+    .eyebrow, .date { color: #84746a; font-family: Arial, sans-serif; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+    @media print { body { background: white; } article { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Exported ${escapeHtml(formatDate(new Date().toISOString()))}</p>
+    <h1>Year of Dates Keepsake</h1>
+    <p>A private record of memories, favorites, learnings, and completed date nights.</p>
+    ${sections}${emptyState}
+  </main>
+</body>
+</html>`;
+
+  const date = new Date().toISOString().slice(0, 10);
+  downloadHtml(`year-of-dates-keepsake-${date}.html`, html);
 }
 
 export function importMemoryBackup(rawBackup: unknown): void {
