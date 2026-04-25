@@ -1,5 +1,6 @@
-import { db, datePlansTable, checklistItemsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { createHash } from "crypto";
+import { sql, eq } from "drizzle-orm";
+import { db, datePlansTable, checklistItemsTable, seedMetadataTable } from "@workspace/db";
 import { logger } from "./logger";
 
 const MOODS = (theme: string, fun: string[], sexy: string[], relaxing: string[], meditative: string[]) => [
@@ -1027,102 +1028,154 @@ const CHECKLIST_ITEMS: Record<number, { label: string; phase: number; person: "s
   ],
 };
 
-export async function seed() {
-  const existing = await db.select().from(datePlansTable).limit(1);
-  if (existing.length > 0) {
-    const firstRow = existing[0];
-    const dinner = firstRow.dinner as Record<string, unknown>;
-    const hasNewFormat = Array.isArray(dinner?.options);
-    if (hasNewFormat) {
-      const existingFunFacts = firstRow.funFacts as unknown[];
-      const missingFunFacts = !existingFunFacts || existingFunFacts.length === 0;
-      if (missingFunFacts) {
-        logger.info("Date plans exist but funFacts are missing — updating content for all 12 months...");
-        for (const plan of DATE_PLANS) {
-          await db
-            .update(datePlansTable)
-            .set({ funFacts: plan.funFacts, conversationPrompts: plan.conversationPrompts })
-            .where(eq(datePlansTable.month, plan.month));
-        }
-        logger.info("Content update complete — funFacts and conversation prompts refreshed");
-      }
+function computeContentHash(): string {
+  const contentForHash = {
+    datePlans: DATE_PLANS.map((p) => ({
+      month: p.month,
+      monthName: p.monthName,
+      theme: p.theme,
+      destination: p.destination,
+      tagline: p.tagline,
+      intro: p.intro,
+      dinner: p.dinner,
+      music: p.music,
+      ritual: p.ritual,
+      funFacts: p.funFacts,
+      conversationPrompts: p.conversationPrompts,
+      activity: p.activity,
+      localAddOn: p.localAddOn,
+      effort: p.effort,
+      cost: p.cost,
+      duration: p.duration,
+    })),
+    checklistItems: CHECKLIST_ITEMS,
+  };
+  return createHash("sha256").update(JSON.stringify(contentForHash)).digest("hex");
+}
 
-      const month12Row = await db.select().from(datePlansTable).where(eq(datePlansTable.month, 12)).limit(1);
-      if (month12Row.length > 0 && month12Row[0].theme === "Anywhere You Want") {
-        logger.info("Month 12 still has anniversary placeholder — replacing with Spain/Canary Islands content...");
-        const spain = DATE_PLANS.find(p => p.month === 12)!;
-        await db
-          .update(datePlansTable)
-          .set({
-            theme: spain.theme,
-            destination: spain.destination,
-            tagline: spain.tagline,
-            intro: spain.intro,
-            dinner: spain.dinner,
-            music: spain.music,
-            ritual: spain.ritual,
-            funFacts: spain.funFacts,
-            conversationPrompts: spain.conversationPrompts,
-            activity: spain.activity,
-            localAddOn: spain.localAddOn,
-            effort: spain.effort,
-            cost: spain.cost,
-            duration: spain.duration,
-          })
-          .where(eq(datePlansTable.month, 12));
-        logger.info("Month 12 updated to Spain/Canary Islands");
-      }
-      const firstChecklist = await db.select().from(checklistItemsTable).limit(1);
-      const checklistHasPersonData = firstChecklist.length > 0 && firstChecklist[0].person !== "both";
-      if (checklistHasPersonData || firstChecklist.length === 0) {
-        if (firstChecklist.length === 0) {
-          logger.info("Date plans exist but checklist is empty — seeding checklist items...");
-          for (const [monthStr, items] of Object.entries(CHECKLIST_ITEMS)) {
-            const month = parseInt(monthStr, 10);
-            for (const item of items) {
-              await db.insert(checklistItemsTable).values({ month, label: item.label, completed: false, phase: item.phase, person: item.person });
-            }
-          }
-          logger.info("Checklist seed complete");
-        } else {
-          logger.info("Seed data already exists in new format, skipping");
-        }
-        return;
-      }
-      logger.info("Checklist items lack phase/person data — clearing and re-seeding checklist...");
-      await db.delete(checklistItemsTable);
-      for (const [monthStr, items] of Object.entries(CHECKLIST_ITEMS)) {
-        const month = parseInt(monthStr, 10);
-        for (const item of items) {
-          await db.insert(checklistItemsTable).values({ month, label: item.label, completed: false, phase: item.phase, person: item.person });
-        }
-      }
-      logger.info("Checklist re-seed complete");
-      return;
-    }
-    logger.info("Legacy seed data detected — clearing and re-seeding with new format...");
-    await db.delete(checklistItemsTable);
-    await db.delete(datePlansTable);
-  }
+async function ensureSeedMetadataTable(): Promise<void> {
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS seed_metadata (
+      key text PRIMARY KEY,
+      value text NOT NULL,
+      updated_at text NOT NULL
+    )
+  `);
+}
 
-  logger.info("Seeding date plans...");
+async function upsertDatePlanContent(): Promise<void> {
   for (const plan of DATE_PLANS) {
-    await db.insert(datePlansTable).values(plan);
+    await db
+      .insert(datePlansTable)
+      .values(plan)
+      .onConflictDoUpdate({
+        target: datePlansTable.month,
+        set: {
+          monthName: plan.monthName,
+          theme: plan.theme,
+          destination: plan.destination,
+          tagline: plan.tagline,
+          intro: plan.intro,
+          dinner: plan.dinner,
+          music: plan.music,
+          ritual: plan.ritual,
+          funFacts: plan.funFacts,
+          conversationPrompts: plan.conversationPrompts,
+          activity: plan.activity,
+          localAddOn: plan.localAddOn,
+          effort: plan.effort,
+          cost: plan.cost,
+          duration: plan.duration,
+        },
+      });
   }
+}
 
-  logger.info("Seeding checklist items...");
+async function mergeChecklistItems(): Promise<void> {
+  const existing = await db.select().from(checklistItemsTable);
+  const existingByKey = new Map(existing.map((row) => [`${row.month}:${row.label}`, row]));
+
+  const seedKeys = new Set<string>();
   for (const [monthStr, items] of Object.entries(CHECKLIST_ITEMS)) {
     const month = parseInt(monthStr, 10);
     for (const item of items) {
-      await db.insert(checklistItemsTable).values({
-        month,
-        label: item.label,
-        completed: false,
-        phase: item.phase,
-        person: item.person,
-      });
+      const key = `${month}:${item.label}`;
+      seedKeys.add(key);
+      const existingRow = existingByKey.get(key);
+      if (existingRow) {
+        if (existingRow.phase !== item.phase || existingRow.person !== item.person) {
+          await db
+            .update(checklistItemsTable)
+            .set({ phase: item.phase, person: item.person })
+            .where(eq(checklistItemsTable.id, existingRow.id));
+        }
+      } else {
+        await db.insert(checklistItemsTable).values({
+          month,
+          label: item.label,
+          completed: false,
+          phase: item.phase,
+          person: item.person,
+        });
+      }
     }
   }
 
-  logger.info("Seed complete — 12 date plans and checklist items loaded");
+  for (const row of existing) {
+    const key = `${row.month}:${row.label}`;
+    if (!seedKeys.has(key)) {
+      await db.delete(checklistItemsTable).where(eq(checklistItemsTable.id, row.id));
+    }
+  }
+}
+
+export async function seed() {
+  await ensureSeedMetadataTable();
+
+  const contentHash = computeContentHash();
+
+  const storedRows = await db.select().from(seedMetadataTable).where(eq(seedMetadataTable.key, "content_hash"));
+  const storedHash = storedRows.length > 0 ? storedRows[0].value : null;
+
+  if (storedHash === contentHash) {
+    logger.info("Seed content unchanged — skipping");
+    return;
+  }
+
+  const existingPlans = await db.select().from(datePlansTable).limit(1);
+  const isFirstRun = existingPlans.length === 0;
+
+  if (isFirstRun) {
+    logger.info("Fresh install — seeding date plans and checklist items...");
+    for (const plan of DATE_PLANS) {
+      await db.insert(datePlansTable).values(plan);
+    }
+    for (const [monthStr, items] of Object.entries(CHECKLIST_ITEMS)) {
+      const month = parseInt(monthStr, 10);
+      for (const item of items) {
+        await db.insert(checklistItemsTable).values({
+          month,
+          label: item.label,
+          completed: false,
+          phase: item.phase,
+          person: item.person,
+        });
+      }
+    }
+    logger.info("Seed complete — 12 date plans and checklist items loaded");
+  } else {
+    logger.info("Seed content changed — updating content fields while preserving user data...");
+    await upsertDatePlanContent();
+    await mergeChecklistItems();
+    logger.info("Seed content update complete — user data preserved");
+  }
+
+  const now = new Date().toISOString();
+  await db
+    .insert(seedMetadataTable)
+    .values({ key: "content_hash", value: contentHash, updatedAt: now })
+    .onConflictDoUpdate({
+      target: seedMetadataTable.key,
+      set: { value: contentHash, updatedAt: now },
+    });
 }

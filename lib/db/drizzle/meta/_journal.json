@@ -29,6 +29,13 @@
       "when": 1777068000000,
       "tag": "0003_date_plans_fun_facts",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1745545200000,
+      "tag": "0004_seed_versioning",
+      "breakpoints": true
     }
   ]
 }
