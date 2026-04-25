@@ -39,7 +39,8 @@ jobs:
       - name: Build static app
         run: pnpm --filter @workspace/year-of-dates run build
         env:
-          BASE_PATH: /Date-Night-Planner/
+          BASE_PATH: /one-night-in/
+
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
