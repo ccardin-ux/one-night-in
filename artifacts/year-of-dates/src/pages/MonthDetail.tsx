@@ -431,10 +431,9 @@ export default function MonthDetail() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.05 * i }}
-                  className="rounded-xl p-4"
-                  style={{ background: "rgba(120, 113, 95, 0.12)", border: "1px solid rgba(120, 113, 95, 0.22)" }}
+                  className="rounded-xl p-4 bg-muted/60 border border-border"
                 >
-                  <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.82)" }}>
+                  <p className="text-sm leading-relaxed text-foreground/80 font-sans">
                     {fact}
                   </p>
                 </motion.div>
