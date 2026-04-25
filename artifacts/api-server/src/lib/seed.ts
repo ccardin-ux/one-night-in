@@ -855,69 +855,69 @@ const DATE_PLANS = [
   {
     month: 12,
     monthName: "December",
-    theme: "Anywhere You Want",
-    destination: "Your First Anniversary",
-    tagline: "Twelve months, twelve worlds, one extraordinary year",
-    intro: "December belongs entirely to you. You've cooked your way around the world, set the mood for twelve evenings, and found things out about each other you didn't know before. Tonight, Seth cooks whatever he's been thinking about for months. Elana sets the tone for the year ahead.",
+    theme: "Spain",
+    destination: "Tenerife, Canary Islands",
+    tagline: "An extinct volcano sacred to the ancients, a forest older than memory, and papas with mojo at midnight",
+    intro: "December lands you in the Canary Islands — a volcanic archipelago off the African coast that belongs to Spain but feels like a world entirely its own. The Guanche people who lived here for thousands of years before Europe arrived left behind sacred mountains, ancient ceremonies, and the most primordial forest in the Western world. Seth cooks from the islands' volcanic pantry — wrinkled salted potatoes, slow-cooked meat, and the fiery green mojo that goes on everything. Elana sets the feeling of an island night.",
     dinner: {
       options: [
         {
           id: 1,
-          dish: "Your Favorite Dish from This Year",
-          cuisine: "The World",
-          description: "Go back to the recipe that made you stop and look at each other. The one you talked about for days after. Make it again — better this time, because you know each other better now.",
-          difficulty: "Your call",
-          prepTime: "However long it takes",
-          ingredients: ["everything you've learned this year"],
+          dish: "Papas Arrugadas with Mojo Verde and Mojo Rojo + Slow-Braised Ropa Vieja Canaria",
+          cuisine: "Canarian",
+          description: "The defining dish of the Canary Islands: small potatoes boiled in heavily salted water until the skins wrinkle and coat in a fine salt crust. Served with two sauces — mojo verde (green herb and garlic) and mojo rojo (smoky dried pepper and cumin). Alongside, ropa vieja canaria: shredded beef or chicken braised low and slow with tomatoes, chickpeas, saffron, and wine until it falls apart. Island comfort food at its most complete.",
+          difficulty: "Medium",
+          prepTime: "2.5 hours",
+          ingredients: ["small waxy potatoes", "coarse sea salt", "fresh cilantro", "garlic", "green pepper", "cumin", "olive oil", "white wine vinegar", "dried guindilla peppers", "beef or chicken thighs", "chickpeas", "tomatoes", "saffron", "white wine", "onion"],
         },
         {
           id: 2,
-          dish: "A Six-Course Tasting Menu (Your Own)",
-          cuisine: "Global",
-          description: "Design a six-course menu together — one bite from each continent you've explored this year. Small portions. Big flavors. A love letter to everything you've learned.",
-          difficulty: "High",
-          prepTime: "All day",
-          ingredients: ["your twelve months of knowledge"],
+          dish: "Grilled Dorado (Mahi-Mahi) with Mojo Verde, Roasted Sweet Potatoes, and Canarian Salad",
+          cuisine: "Canarian (Seafood)",
+          description: "Dorado is the fish of the Canaries — firm, meaty, and perfectly suited to the grill. Score the fish deeply, rub with olive oil and sea salt, and grill over high heat until the skin crisps and the flesh pulls apart in clean flakes. Serve with mojo verde, roasted sweet potatoes from the island, and a simple salad of tomatoes, onion, and local cheese (substitute manchego). The whole plate tastes like somewhere warm and unhurried.",
+          difficulty: "Medium",
+          prepTime: "45 minutes",
+          ingredients: ["mahi-mahi fillets (or whole fish if possible)", "olive oil", "sea salt", "fresh cilantro", "garlic", "green pepper", "cumin", "vinegar", "sweet potatoes", "cherry tomatoes", "manchego or similar firm cheese", "red onion"],
         },
         {
           id: 3,
-          dish: "Something You've Never Tried Before",
-          cuisine: "Unknown",
-          description: "Pick a cuisine you haven't explored this year. Research it together. Cook it without a recipe if you're brave. Year two begins the moment you decide to keep going.",
-          difficulty: "Unknown",
-          prepTime: "As long as it takes",
-          ingredients: ["curiosity", "courage", "each other"],
+          dish: "Canarian Stew: Puchero Canario",
+          cuisine: "Canarian",
+          description: "The Canary Islands version of a classic Spanish cocido — a generous pot of beef, chicken, chorizo, chickpeas, corn, green beans, potatoes, pumpkin, and cabbage cooked together in a rich broth until everything softens and the stock becomes deep and golden. Ladled into bowls with crusty bread and mojo on the side. This is the food of the islands' interior — sustaining, generous, and deeply satisfying on a cold December night.",
+          difficulty: "Medium",
+          prepTime: "3 hours",
+          ingredients: ["beef short rib or chuck", "chicken thigh", "chorizo", "chickpeas", "corn cob", "green beans", "waxy potatoes", "pumpkin", "cabbage", "carrots", "onion", "garlic", "saffron", "fresh herbs"],
         },
       ],
     },
     music: {
       moods: MOODS(
-        "celebratory",
-        ["Your Year's Best Discoveries", "Everything That Made You Dance", "The Songs You'll Always Remember"],
-        ["The Songs That Made You Feel Something", "The Artists You Found Together", "Music That Will Always Mean This Year"],
-        ["The Quieter Moments", "Songs That Let You Just Be Together", "Music That Needs No Occasion"],
-        ["The Most Beautiful Thing You Heard This Year", "Music You'll Return to Forever", "Something That Silenced the Room"]
+        "Canary Islands",
+        ["Totó la Momposina", "Buena Vista Social Club", "Omara Portuondo"],
+        ["Chambao", "Ojos de Brujo", "Rosalía"],
+        ["Niño de Elche", "Estrella Morente", "Pepe de Lucía"],
+        ["La Monterías", "Benito Cabrera", "Pedro Guerra"]
       ),
     },
-    ritual: { title: "Write Each Other a Letter", description: "Before dinner, separately write a short letter — what this year meant to you, what you learned about the other person, what you're grateful for. Read them to each other slowly, over the first glass of wine." },
+    ritual: { title: "Light a Candle for the Guanche", description: "Before dinner, light a candle together. The Guanche people — the original Canarians — believed that Teide, the great volcano, was a sacred mountain holding the underworld in balance. Hold the flame for a moment and offer a word of thanks to whatever ancient force is in the earth beneath where you live. Then set it in the center of the table." },
     funFacts: [
-      "Every human culture that has ever existed has developed rituals to mark the passage of time — solstice ceremonies, harvest festivals, new year celebrations. The need to make meaning out of transitions is not cultural. It is biological.",
-      "The word 'anniversary' comes from the Latin annus (year) and versare (to turn) — a year anniversary is the completion of a full turn, a circle back to the beginning. You have made a complete revolution around the sun together.",
-      "In many indigenous traditions, one year of marriage is considered the completion of the first real cycle — the couple having moved through all four seasons together. Only after that can the full shape of the union be understood.",
-      "Ichigo ichie — the Japanese concept of 'this moment, once' — holds that every shared experience will never happen in precisely this way again. To be fully present is the deepest act of love available to a human being.",
+      "The Guanche people who inhabited the Canary Islands for thousands of years before European contact practiced a sophisticated form of ancestor veneration — mummifying their dead in ways strikingly similar to ancient Egypt. Their sacred mountain, Teide, was believed to be the prison of Guayota, a demon god, held in check by the sun. When the volcano erupted, the Guanche understood it as the underworld breaking free.",
+      "The Laurisilva forest of La Gomera — a UNESCO World Heritage site — is a living relic of the Tertiary period, over 20 million years old. It is the largest surviving subtropical laurel forest in the world, a dense, mossy cathedral where the trees are draped in lichen and the air is made of moisture. It is one of the few places on Earth where you can walk inside a forest that once covered all of Europe.",
+      "The Dragon Tree (Drago) is the sacred tree of the Canary Islands — Dracaena draco, some specimens over a thousand years old. Its sap runs blood-red, called 'dragon's blood,' used by the Guanche in ritual ceremonies, wound healing, and mummification. For the Guanche, the dragon tree was a portal between the living and the dead.",
+      "The Canary Islands sit directly on the meeting point of European, African, and Atlantic currents — biologically, linguistically, and spiritually they are a crossroads. The Spanish arrived and the Guanche were absorbed; the African coast is visible on clear days. The volcanic soil grows the most mineral-rich produce in Europe. The islands are a place where elemental forces — fire, ocean, wind, and age — converge in one small archipelago.",
     ],
     conversationPrompts: [
-      "You've just completed your first full turn around the sun together. In many traditions, this is when the real marriage begins — the infatuation phase is over, and the actual choice starts. What are you choosing, now that you know more?",
-      "Ichigo ichie: this exact moment — this version of us, in this room, on this night — will never exist again. What do you want to say to each other right now, in this specific moment, that you might not say when life gets busy again?",
-      "What's the single most important thing you learned about yourself this year?",
-      "What's the one thing you most want to build in year two — a practice, a place, a way of being together?",
-      "What are you grateful for, in the most specific, honest terms you can find?",
+      "The Guanche people believed that a volcano was literally holding the underworld in check — that sacred mountains were the hinges between worlds. What's your relationship to sacred geography? Is there a place on Earth that you feel holds real power, where the air is different, where something about the place changes you?",
+      "The Laurisilva forest has been alive for 20 million years — it was already ancient when our species first walked upright. When you imagine a forest that has stood for that long, what does it make you feel? Does deep time make you feel small, or does it make you feel held?",
+      "Dragon's blood — the red resin of the Dragon Tree — was used for healing, ceremony, and bridging the living and the dead. What do you believe about what remains after death? Not intellectually: what do you actually sense?",
+      "The Canary Islands are a crossroads — Europe, Africa, and the Atlantic converging in one small volcanic chain. You both carry multiple lineages, multiple streams. When you think about where you come from, which current feels most alive in you right now?",
+      "We've traveled through twelve places this year. Which one left something in you? Which one taught you something about yourself, or us, that you're still living with?",
     ],
-    activity: { title: "Make a time capsule", description: "Write down three things each: one thing you hope is true in five years, one thing you're most proud of this year, and one word that describes your marriage right now. Seal it. Open it on your fifth anniversary." },
-    localAddOn: { title: "Go somewhere that feels like yours", description: "A restaurant where you had your first date, a bar where you fell in love with each other, a neighborhood that means something. Go back. Mark the year." },
-    effort: "Your call",
-    cost: "Whatever it deserves",
-    duration: "All night",
+    activity: { title: "Make mojo verde together from scratch", description: "Mojo verde is the sauce that runs through everything in the Canary Islands — cilantro, garlic, green pepper, cumin, olive oil, and vinegar, all smashed in a mortar or blended until thick and electric green. Make it by hand if you can — the mortar changes something. Taste it as you build it. It should be bright, pungent, and alive." },
+    localAddOn: { title: "Find a Spanish or tapas bar", description: "After dinner, find a good local tapas bar or Spanish wine spot. Order patatas bravas, a glass of Manzanilla sherry or a Spanish red, and sit close. Pretend you're in the islands for a little while longer." },
+    effort: "Medium",
+    cost: "~$45",
+    duration: "3-4 hours",
     scheduledDate: null,
     completed: false,
     completedAt: null,
@@ -1018,12 +1018,12 @@ const CHECKLIST_ITEMS: Record<number, { label: string; phase: number; person: "s
     { label: "Both: Make pisco sours before the meal. Toast to eleven months.", phase: 3, person: "both" },
   ],
   12: [
-    { label: "Seth: Look back at all 12 months — which dish was the best? Which do you want to revisit?", phase: 1, person: "seth" },
-    { label: "Elana: Think about what this year has sounded like. What do you want year two to feel like?", phase: 1, person: "elana" },
-    { label: "Seth: Source the ingredients for the dish you've chosen to make tonight", phase: 1, person: "seth" },
-    { label: "Seth: Read your full recipe, then prep everything you can: marinate, slice, measure, and stage your ingredients", phase: 2, person: "seth" },
-    { label: "Elana: Build the final playlist for the year — make it worthy of the occasion", phase: 2, person: "elana" },
-    { label: "Both: Write your letters to each other before dinner. Read them over the first glass.", phase: 3, person: "both" },
+    { label: "Seth: Choose your recipe — papas arrugadas with ropa vieja, grilled dorado, or the full Canarian stew", phase: 1, person: "seth" },
+    { label: "Elana: Choose the vibe for your island night — flamenco-electric, warm and sexy, slow and oceanic, or deeply still", phase: 1, person: "elana" },
+    { label: "Seth: Source waxy small potatoes, coarse sea salt, and fresh cilantro for the mojo", phase: 1, person: "seth" },
+    { label: "Seth: Make the mojo verde by hand if possible — mortar and pestle, layer by layer; start any braises early", phase: 2, person: "seth" },
+    { label: "Elana: Build your Canarian playlist around your chosen mood — it should feel like warm wind off volcanic stone", phase: 2, person: "elana" },
+    { label: "Both: Light a candle for the Guanche and set the table before dinner", phase: 3, person: "both" },
   ],
 };
 
@@ -1045,6 +1045,32 @@ export async function seed() {
             .where(eq(datePlansTable.month, plan.month));
         }
         logger.info("Content update complete — funFacts and conversation prompts refreshed");
+      }
+
+      const month12Row = await db.select().from(datePlansTable).where(eq(datePlansTable.month, 12)).limit(1);
+      if (month12Row.length > 0 && month12Row[0].theme === "Anywhere You Want") {
+        logger.info("Month 12 still has anniversary placeholder — replacing with Spain/Canary Islands content...");
+        const spain = DATE_PLANS.find(p => p.month === 12)!;
+        await db
+          .update(datePlansTable)
+          .set({
+            theme: spain.theme,
+            destination: spain.destination,
+            tagline: spain.tagline,
+            intro: spain.intro,
+            dinner: spain.dinner,
+            music: spain.music,
+            ritual: spain.ritual,
+            funFacts: spain.funFacts,
+            conversationPrompts: spain.conversationPrompts,
+            activity: spain.activity,
+            localAddOn: spain.localAddOn,
+            effort: spain.effort,
+            cost: spain.cost,
+            duration: spain.duration,
+          })
+          .where(eq(datePlansTable.month, 12));
+        logger.info("Month 12 updated to Spain/Canary Islands");
       }
       const firstChecklist = await db.select().from(checklistItemsTable).limit(1);
       const checklistHasPersonData = firstChecklist.length > 0 && firstChecklist[0].person !== "both";
