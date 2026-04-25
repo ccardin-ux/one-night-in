@@ -423,7 +423,7 @@ export default function MonthDetail() {
                     "text-sm font-sans leading-snug",
                     item.completed && "line-through text-muted-foreground"
                   )}>
-                    {item.label}
+                    {item.label.replace(/^Both:\s*/i, "")}
                   </span>
                 </button>
               ))}
