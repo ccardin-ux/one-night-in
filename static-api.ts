@@ -36,12 +36,17 @@ const CHECKLIST_STATE_KEY = `${STORAGE_PREFIX}:checklist`;
 const FAVORITES_KEY = `${STORAGE_PREFIX}:favorites`;
 const REFLECTIONS_KEY = `${STORAGE_PREFIX}:reflections`;
 const LEARNINGS_KEY = `${STORAGE_PREFIX}:learnings`;
+const PARTNER_NAMES_KEY = `${STORAGE_PREFIX}:partnerNames`;
+const COUPLE_ROLES_KEY = `${STORAGE_PREFIX}:coupleRoles`;
+
 const STORAGE_KEYS = [
   DATE_STATE_KEY,
   CHECKLIST_STATE_KEY,
   FAVORITES_KEY,
   REFLECTIONS_KEY,
   LEARNINGS_KEY,
+  PARTNER_NAMES_KEY,
+  COUPLE_ROLES_KEY,
 ] as const;
 
 type StoredDateState = Record<number, Partial<UpdateDateBody>>;
@@ -56,12 +61,48 @@ type MemoryBackup = {
     favorites: Favorite[];
     reflections: Reflection[];
     learnings: Learning[];
+    partnerNames?: PartnerNames;
+    monthRoles?: Record<number, MonthRoles>;
   };
 };
 
+// ─── Partner names ────────────────────────────────────────────────────────────
+
+export type PartnerNames = { p1: string; p2: string };
+
+export function getPartnerNames(): PartnerNames {
+  return readStorage<PartnerNames>(PARTNER_NAMES_KEY, { p1: "", p2: "" });
+}
+
+export function savePartnerNames(names: PartnerNames): void {
+  writeStorage(PARTNER_NAMES_KEY, names);
+}
+
+// ─── Per-month roles ──────────────────────────────────────────────────────────
+
+export type MonthRoles = {
+  cookPartner: "p1" | "p2";
+  vibePartner: "p1" | "p2";
+  sousChef: boolean; // true = non-cook is sous chef, false = full relax
+  ritual: "candle" | "toast" | "song";
+  vibe: string;
+};
+
+export function getMonthRoles(month: number): MonthRoles | null {
+  const all = readStorage<Record<number, MonthRoles>>(COUPLE_ROLES_KEY, {});
+  return all[month] ?? null;
+}
+
+export function saveMonthRoles(month: number, roles: MonthRoles): void {
+  const all = readStorage<Record<number, MonthRoles>>(COUPLE_ROLES_KEY, {});
+  all[month] = roles;
+  writeStorage(COUPLE_ROLES_KEY, all);
+}
+
+// ─── Core storage helpers ─────────────────────────────────────────────────────
+
 function readStorage<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
-
   try {
     const raw = window.localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : fallback;
@@ -100,7 +141,6 @@ function getDate(month: number): DatePlan {
 function getChecklist(month: number): ChecklistItem[] {
   const completedState = readStorage<StoredChecklistState>(CHECKLIST_STATE_KEY, {});
   const items = CHECKLIST_ITEMS[month] ?? [];
-
   return items.map((item, index) => {
     const id = month * 100 + index + 1;
     return {
@@ -135,7 +175,6 @@ function getSummary(): Summary {
   const completedDates = dates.filter((date) => date.completed).length;
   const upcomingDate = dates.find((date) => !date.completed);
   const nextScheduled = dates.find((date) => !date.completed && date.scheduledDate);
-
   return {
     totalDates: dates.length,
     completedDates,
@@ -148,10 +187,7 @@ function getSummary(): Summary {
 
 function downloadJson(filename: string, data: unknown): void {
   if (typeof document === "undefined") return;
-
-  const blob = new Blob([JSON.stringify(data, null, 2)], {
-    type: "application/json;charset=utf-8",
-  });
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -162,7 +198,6 @@ function downloadJson(filename: string, data: unknown): void {
 
 function downloadHtml(filename: string, html: string): void {
   if (typeof document === "undefined") return;
-
   const blob = new Blob([html], { type: "text/html;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -200,6 +235,8 @@ export function createMemoryBackup(): MemoryBackup {
       favorites: getFavorites(),
       reflections: getReflections(),
       learnings: getLearnings(),
+      partnerNames: getPartnerNames(),
+      monthRoles: readStorage<Record<number, MonthRoles>>(COUPLE_ROLES_KEY, {}),
     },
   };
 }
@@ -215,6 +252,8 @@ export function downloadKeepsake(): void {
   const reflections = getReflections();
   const learnings = getLearnings();
   const completedDates = dates.filter((date) => date.completed);
+  const names = getPartnerNames();
+  const coupleLabel = names.p1 && names.p2 ? `${names.p1} & ${names.p2}` : "Year of Dates";
 
   const monthName = (month: number) =>
     dates.find((date) => date.month === month)?.monthName ?? `Month ${month}`;
@@ -287,23 +326,23 @@ export function downloadKeepsake(): void {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Year of Dates Keepsake</title>
+  <title>${escapeHtml(coupleLabel)} Keepsake</title>
   <style>
-    body { margin: 0; background: #f7f3ec; color: #2b2420; font-family: Georgia, serif; line-height: 1.6; }
+    body { margin: 0; background: #0f0d0b; color: #f0e8dc; font-family: Georgia, serif; line-height: 1.6; }
     main { max-width: 760px; margin: 0 auto; padding: 48px 24px; }
-    h1 { font-size: 44px; font-weight: 400; margin: 0 0 8px; }
-    h2 { border-top: 1px solid #ded4c9; font-size: 28px; font-weight: 400; margin: 40px 0 18px; padding-top: 28px; }
-    h3 { font-size: 22px; font-weight: 400; margin: 0 0 8px; }
-    article { background: #fffaf3; border: 1px solid #e3d8cc; border-radius: 14px; margin: 14px 0; padding: 22px; }
-    .eyebrow, .date { color: #84746a; font-family: Arial, sans-serif; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
-    @media print { body { background: white; } article { break-inside: avoid; } }
+    h1 { font-size: 44px; font-weight: 300; margin: 0 0 8px; }
+    h2 { border-top: 1px solid rgba(255,255,255,0.08); font-size: 28px; font-weight: 300; margin: 40px 0 18px; padding-top: 28px; }
+    h3 { font-size: 22px; font-weight: 300; margin: 0 0 8px; }
+    article { background: #181410; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; margin: 14px 0; padding: 22px; }
+    .eyebrow, .date { color: #c4623a; font-family: Arial, sans-serif; font-size: 11px; letter-spacing: .15em; text-transform: uppercase; }
+    @media print { body { background: white; color: #1a1a14; } article { background: #fafafa; break-inside: avoid; } }
   </style>
 </head>
 <body>
   <main>
     <p class="eyebrow">Exported ${escapeHtml(formatDate(new Date().toISOString()))}</p>
-    <h1>Year of Dates Keepsake</h1>
-    <p>A private record of memories, favorites, learnings, and completed date nights.</p>
+    <h1>${escapeHtml(coupleLabel)}</h1>
+    <p style="color:#a89880; font-size:14px;">A private record of memories, favorites, learnings, and completed date nights.</p>
     ${sections}${emptyState}
   </main>
 </body>
@@ -315,22 +354,24 @@ export function downloadKeepsake(): void {
 
 export function importMemoryBackup(rawBackup: unknown): void {
   const backup = rawBackup as Partial<MemoryBackup>;
-
   if (backup.app !== "year-of-dates" || backup.version !== 1 || !backup.data) {
     throw new Error("This does not look like a Year of Dates backup file.");
   }
-
   writeStorage(DATE_STATE_KEY, backup.data.dateState ?? {});
   writeStorage(CHECKLIST_STATE_KEY, backup.data.checklistState ?? {});
   writeStorage(FAVORITES_KEY, backup.data.favorites ?? []);
   writeStorage(REFLECTIONS_KEY, backup.data.reflections ?? []);
   writeStorage(LEARNINGS_KEY, backup.data.learnings ?? []);
+  writeStorage(PARTNER_NAMES_KEY, backup.data.partnerNames ?? { p1: "", p2: "" });
+  writeStorage(COUPLE_ROLES_KEY, backup.data.monthRoles ?? {});
 }
 
 export function clearStoredMemories(): void {
   if (typeof window === "undefined") return;
   STORAGE_KEYS.forEach((key) => window.localStorage.removeItem(key));
 }
+
+// ─── Query keys ───────────────────────────────────────────────────────────────
 
 export const getListDatesQueryKey = () => ["/api/dates"] as const;
 export const getGetDateQueryKey = (month: number) => [`/api/dates/${month}`] as const;
@@ -339,6 +380,8 @@ export const getListFavoritesQueryKey = () => ["/api/favorites"] as const;
 export const getListReflectionsQueryKey = () => ["/api/reflections"] as const;
 export const getListLearningsQueryKey = () => ["/api/learnings"] as const;
 export const getGetSummaryQueryKey = () => ["/api/summary"] as const;
+
+// ─── Hooks ────────────────────────────────────────────────────────────────────
 
 export function useListDates(options?: QueryOptions): UseQueryResult<DatePlan[], Error> {
   return useQuery({
@@ -418,7 +461,6 @@ export function useToggleChecklistItem(
       const state = readStorage<StoredChecklistState>(CHECKLIST_STATE_KEY, {});
       state[itemId] = data.completed;
       writeStorage(CHECKLIST_STATE_KEY, state);
-
       const item = getAllChecklistItems().find((entry) => entry.id === itemId && entry.month === month);
       if (!item) throw new Error("Checklist item not found");
       return item;
