@@ -18,10 +18,14 @@ import { motion } from "framer-motion";
 import { MapPin, Calendar, BookOpen, Heart, Star, ChevronRight, Download, Upload, Trash2, FileText } from "lucide-react";
 import { cn, getMonthGradient } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { getDisplayProfile, useCoupleProfile } from "@/lib/couple-profile";
+import Setup from "@/pages/Setup";
 
 export default function Dashboard() {
   const { data: dates, isLoading: datesLoading } = useListDates();
   const { data: summary } = useGetSummary();
+  const savedProfile = useCoupleProfile();
+  const profile = getDisplayProfile(savedProfile);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const importInputRef = useRef<HTMLInputElement>(null);
@@ -94,6 +98,10 @@ export default function Dashboard() {
   const completedCount = summary?.completedDates ?? 0;
   const currentMonth = summary?.upcomingMonth ?? 1;
 
+  if (!savedProfile) {
+    return <Setup />;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
@@ -106,15 +114,25 @@ export default function Dashboard() {
             transition={{ duration: 0.7, ease: "easeOut" }}
           >
             <p className="text-rose-300/80 text-sm tracking-[0.2em] uppercase font-sans mb-4">
-              Seth &amp; Elana
+              {profile.partnerOne} &amp; {profile.partnerTwo}
             </p>
             <h1 className="font-serif text-5xl md:text-7xl font-light leading-tight mb-6">
               Year of Dates
             </h1>
             <p className="text-white/70 text-lg md:text-xl max-w-xl leading-relaxed font-light">
-              One meaningful evening together, every month of your first year of marriage.
-              Food. Music. Conversation. Adventure.
+              {profile.occasion}. Twelve personalized evenings shaped around {profile.vibe.toLowerCase()} connection,
+              {profile.cookingSkill} cooking, music, conversation, and shared curiosity.
             </p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              {profile.interests.slice(0, 6).map((interest) => (
+                <span key={interest} className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs text-white/75">
+                  {interest}
+                </span>
+              ))}
+              <Link href="/setup" className="rounded-full border border-rose-200/30 bg-rose-200/10 px-3 py-1 text-xs text-rose-100 hover:bg-rose-200/20">
+                Edit profile
+              </Link>
+            </div>
           </motion.div>
 
           {/* Stats */}

@@ -21,11 +21,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, MapPin, Clock, DollarSign, ChefHat, Music, Flame,
   MessageCircle, Sparkles, Navigation, CheckSquare, Square,
-  Calendar, CalendarPlus, Star, Heart, BookOpen, Check, X, ChevronRight, Leaf
+  Calendar, CalendarPlus, Star, Heart, BookOpen, Check, X, ChevronRight, Leaf, ExternalLink
 } from "lucide-react";
 import { Link } from "wouter";
-import { cn, getMonthGradient, generateGoogleCalendarUrl, downloadICS } from "@/lib/utils";
+import { cn, getMonthGradient, generateGoogleCalendarUrl, downloadICS, generateSpotifySearchUrl } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import {
+  getChefRole,
+  getDisplayProfile,
+  saveChefRole,
+  useCoupleProfile,
+  type ChefRole,
+} from "@/lib/couple-profile";
 
 interface RecipeOption {
   id: number;
@@ -54,9 +61,11 @@ export default function MonthDetail() {
   const monthNum = parseInt(month || "1", 10);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const profile = getDisplayProfile(useCoupleProfile());
 
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showReflectionModal, setShowReflectionModal] = useState(false);
+  const [chefRole, setChefRole] = useState<ChefRole>(() => getChefRole(monthNum));
   const [scheduleDate, setScheduleDate] = useState("");
   const [reflectionData, setReflectionData] = useState({
     highlight: "",
@@ -112,6 +121,12 @@ export default function MonthDetail() {
     queryClient.invalidateQueries({ queryKey: getGetDateQueryKey(monthNum) });
     queryClient.invalidateQueries({ queryKey: getListDatesQueryKey() });
     toast({ description: "Recipe chosen. Time to source those ingredients." });
+  };
+
+  const handleChefRole = (role: ChefRole) => {
+    setChefRole(role);
+    saveChefRole(monthNum, role);
+    toast({ description: "Cooking roles updated" });
   };
 
   const handleChooseVibe = async (vibeId: string) => {
@@ -334,12 +349,12 @@ export default function MonthDetail() {
           transition={{ delay: 0.2 }}
           className="grid grid-cols-1 lg:grid-cols-2 gap-6"
         >
-          {/* Seth's Track */}
+          {/* Cooking track */}
           <div className="rounded-2xl border border-border bg-card overflow-hidden">
             <div className="bg-stone-800 text-white px-6 py-4">
               <div className="flex items-center gap-2 mb-3">
                 <ChefHat className="w-4 h-4 text-amber-300" />
-                <span className="text-sm font-sans tracking-widest uppercase text-amber-300/80">Seth's Kitchen</span>
+                <span className="text-sm font-sans tracking-widest uppercase text-amber-300/80">{profile.cookingLead}'s Kitchen</span>
               </div>
               <PhaseStepper phase={sethPhase} labels={PHASE_LABELS_SETH} />
             </div>
@@ -351,6 +366,11 @@ export default function MonthDetail() {
                   onChoose={handleChooseRecipe}
                   onToggle={handleToggleChecklist}
                   isPending={updateDate.isPending}
+                  cookingLead={profile.cookingLead}
+                  partnerOne={profile.partnerOne}
+                  partnerTwo={profile.partnerTwo}
+                  chefRole={chefRole}
+                  onChefRoleChange={handleChefRole}
                 />
               )}
               {sethPhase === 2 && (
@@ -361,20 +381,22 @@ export default function MonthDetail() {
                   onAdvance={handleAdvanceSethPhase}
                   onReset={handleResetSethChoice}
                   isPending={updateDate.isPending}
+                  chefRole={chefRole}
+                  cookingLead={profile.cookingLead}
                 />
               )}
               {sethPhase === 3 && (
-                <SethPhase3 chosenRecipe={chosenRecipe} onReset={handleResetSethChoice} isPending={updateDate.isPending} />
+                <SethPhase3 chosenRecipe={chosenRecipe} onReset={handleResetSethChoice} isPending={updateDate.isPending} chefRole={chefRole} cookingLead={profile.cookingLead} />
               )}
             </div>
           </div>
 
-          {/* Elana's Track */}
+          {/* Music track */}
           <div className="rounded-2xl border border-border bg-card overflow-hidden">
             <div className="bg-rose-900 text-white px-6 py-4">
               <div className="flex items-center gap-2 mb-3">
                 <Music className="w-4 h-4 text-rose-200" />
-                <span className="text-sm font-sans tracking-widest uppercase text-rose-200/80">Elana's Soundscape</span>
+                <span className="text-sm font-sans tracking-widest uppercase text-rose-200/80">{profile.musicLead}'s Soundscape</span>
               </div>
               <PhaseStepper phase={elanaPhase} labels={PHASE_LABELS_ELANA} color="rose" />
             </div>
@@ -382,6 +404,7 @@ export default function MonthDetail() {
               {elanaPhase === 1 && (
                 <ElanaPhase1
                   moods={music.moods}
+                  searchContext={`${date.monthName} ${date.theme} date night playlist`}
                   onChoose={handleChooseVibe}
                   isPending={updateDate.isPending}
                 />
@@ -389,6 +412,7 @@ export default function MonthDetail() {
               {elanaPhase === 2 && (
                 <ElanaPhase2
                   chosenMood={chosenMood}
+                  searchContext={`${date.monthName} ${date.theme} date night playlist`}
                   elanaItems={elanaChecklistItems}
                   onToggle={handleToggleChecklist}
                   onAdvance={handleAdvanceElanaPhase}
@@ -397,7 +421,7 @@ export default function MonthDetail() {
                 />
               )}
               {elanaPhase === 3 && (
-                <ElanaPhase3 chosenMood={chosenMood} onReset={handleResetElanaChoice} isPending={updateDate.isPending} />
+                <ElanaPhase3 chosenMood={chosenMood} searchContext={`${date.monthName} ${date.theme} date night playlist`} onReset={handleResetElanaChoice} isPending={updateDate.isPending} cookingLead={profile.cookingLead} />
               )}
             </div>
           </div>
@@ -648,16 +672,39 @@ function PhaseStepper({ phase, labels, color = "amber" }: { phase: number; label
   );
 }
 
-function SethPhase1({ options, sourcingItems, onChoose, onToggle, isPending }: {
+function SethPhase1({
+  options,
+  sourcingItems,
+  onChoose,
+  onToggle,
+  isPending,
+  cookingLead,
+  partnerOne,
+  partnerTwo,
+  chefRole,
+  onChefRoleChange,
+}: {
   options: RecipeOption[];
   sourcingItems: { id: number; label: string; completed: boolean }[];
   onChoose: (id: number) => void;
   onToggle: (id: number, completed: boolean) => void;
   isPending: boolean;
+  cookingLead: string;
+  partnerOne: string;
+  partnerTwo: string;
+  chefRole: ChefRole;
+  onChefRoleChange: (role: ChefRole) => void;
 }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground font-sans">Browse these options. Pick the one that speaks to you — based on what you're in the mood to cook, not what you think you should make.</p>
+      <ChefRolePicker
+        cookingLead={cookingLead}
+        partnerOne={partnerOne}
+        partnerTwo={partnerTwo}
+        chefRole={chefRole}
+        onChange={onChefRoleChange}
+      />
       {options.map((option) => (
         <div key={option.id} className="rounded-xl border border-border bg-background p-4 space-y-3">
           <div>
@@ -677,12 +724,13 @@ function SethPhase1({ options, sourcingItems, onChoose, onToggle, isPending }: {
               ))}
             </div>
           </div>
+          <OrderGroceriesButton ingredients={option.ingredients} dish={option.dish} />
           <button
             onClick={() => onChoose(option.id)}
             disabled={isPending}
             className="w-full py-2.5 rounded-xl bg-stone-800 text-white text-sm font-sans hover:bg-stone-700 transition-colors disabled:opacity-50"
           >
-            I'll cook this →
+            Choose this recipe →
           </button>
         </div>
       ))}
@@ -712,13 +760,82 @@ function SethPhase1({ options, sourcingItems, onChoose, onToggle, isPending }: {
   );
 }
 
-function SethPhase2({ chosenRecipe, sethItems, onToggle, onAdvance, onReset, isPending }: {
+function ChefRolePicker({
+  cookingLead,
+  partnerOne,
+  partnerTwo,
+  chefRole,
+  onChange,
+}: {
+  cookingLead: string;
+  partnerOne: string;
+  partnerTwo: string;
+  chefRole: ChefRole;
+  onChange: (role: ChefRole) => void;
+}) {
+  const helperName = cookingLead === partnerOne ? partnerTwo : partnerOne;
+  const options: { value: ChefRole; label: string; description: string }[] = [
+    { value: "primary", label: `${cookingLead} primary chef`, description: `${helperName} can relax, taste, and keep the mood going.` },
+    { value: "sous", label: `${cookingLead} sous chef`, description: `${helperName} leads the recipe while ${cookingLead} preps and plates.` },
+    { value: "together", label: "Cook together", description: "Split prep, tasting, and plating as part of the date." },
+  ];
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <p className="text-xs text-muted-foreground uppercase tracking-widest font-sans mb-3">Cooking roles</p>
+      <div className="grid gap-2">
+        {options.map((option) => (
+          <button
+            key={option.value}
+            onClick={() => onChange(option.value)}
+            className={cn(
+              "text-left rounded-lg border px-3 py-2 transition-colors",
+              chefRole === option.value
+                ? "border-primary bg-primary/10"
+                : "border-border hover:bg-accent",
+            )}
+          >
+            <span className="block text-sm font-sans text-foreground">{option.label}</span>
+            <span className="block text-xs text-muted-foreground mt-0.5">{option.description}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function OrderGroceriesButton({ ingredients, dish }: { ingredients: string[]; dish: string }) {
+  const query = encodeURIComponent(ingredients.join(", "));
+  const href = `https://www.instacart.com/store/s?k=${query}`;
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-sans text-foreground hover:bg-accent transition-colors"
+      aria-label={`Order groceries for ${dish}`}
+    >
+      Order groceries
+    </a>
+  );
+}
+
+function roleDescription(role: ChefRole, cookingLead: string): string {
+  if (role === "sous") return `${cookingLead} is sous chef tonight — prep, plate, taste, and support the lead cook.`;
+  if (role === "together") return "Tonight is a together-cooking date — split the prep, taste together, and let the recipe become part of the connection.";
+  return `${cookingLead} is primary chef tonight — lead the recipe, set the pace, and ask for help where it makes the night better.`;
+}
+
+function SethPhase2({ chosenRecipe, sethItems, onToggle, onAdvance, onReset, isPending, chefRole, cookingLead }: {
   chosenRecipe?: RecipeOption;
   sethItems: { id: number; label: string; completed: boolean }[];
   onToggle: (id: number, completed: boolean) => void;
   onAdvance: () => void;
   onReset: () => void;
   isPending: boolean;
+  chefRole: ChefRole;
+  cookingLead: string;
 }) {
   return (
     <div className="space-y-5">
@@ -743,7 +860,9 @@ function SethPhase2({ chosenRecipe, sethItems, onToggle, onAdvance, onReset, isP
       )}
 
       <div>
-        <p className="text-sm font-sans text-muted-foreground mb-3">Day 2 is prep day. Get your kitchen ready — work through these tasks before cook night:</p>
+        <p className="text-sm font-sans text-muted-foreground mb-3">
+          Day 2 is prep day. {roleDescription(chefRole, cookingLead)} Work through these tasks before cook night:
+        </p>
         <div className="space-y-2">
           {sethItems.map((item) => (
             <button
@@ -779,7 +898,19 @@ function SethPhase2({ chosenRecipe, sethItems, onToggle, onAdvance, onReset, isP
   );
 }
 
-function SethPhase3({ chosenRecipe, onReset, isPending }: { chosenRecipe?: RecipeOption; onReset: () => void; isPending: boolean }) {
+function SethPhase3({
+  chosenRecipe,
+  onReset,
+  isPending,
+  chefRole,
+  cookingLead,
+}: {
+  chosenRecipe?: RecipeOption;
+  onReset: () => void;
+  isPending: boolean;
+  chefRole: ChefRole;
+  cookingLead: string;
+}) {
   return (
     <div className="space-y-4">
       <div className="rounded-xl bg-amber-50 border border-amber-200 p-4">
@@ -802,7 +933,7 @@ function SethPhase3({ chosenRecipe, onReset, isPending }: { chosenRecipe?: Recip
         </div>
       </div>
       <p className="text-sm text-muted-foreground font-sans leading-relaxed">
-        Cook with intention. Don't rush. Pour yourself something good before you start. The process is part of the date — not a chore to get through before it.
+        {roleDescription(chefRole, cookingLead)} Cook with intention. Don't rush. Pour yourself something good before you start. The process is part of the date — not a chore to get through before it.
       </p>
       <div className="rounded-xl border border-border p-4 space-y-2">
         <p className="text-xs text-muted-foreground uppercase tracking-widest font-sans">A few reminders</p>
@@ -817,8 +948,18 @@ function SethPhase3({ chosenRecipe, onReset, isPending }: { chosenRecipe?: Recip
   );
 }
 
-function ElanaPhase1({ moods, onChoose, isPending }: {
+function getSpotifyMoodUrl(mood: MoodOption, searchContext: string) {
+  return generateSpotifySearchUrl([
+    mood.name,
+    mood.playlistDirection,
+    mood.artists.slice(0, 3).join(" "),
+    searchContext,
+  ]);
+}
+
+function ElanaPhase1({ moods, searchContext, onChoose, isPending }: {
   moods: MoodOption[];
+  searchContext: string;
   onChoose: (id: string) => void;
   isPending: boolean;
 }) {
@@ -827,11 +968,9 @@ function ElanaPhase1({ moods, onChoose, isPending }: {
       <p className="text-sm text-muted-foreground font-sans">What are you in the mood for tonight? Don't overthink it. Your gut knows.</p>
       <div className="space-y-3">
         {moods.map((mood) => (
-          <button
+          <div
             key={mood.id}
-            onClick={() => onChoose(mood.id)}
-            disabled={isPending}
-            className="w-full rounded-xl border border-border bg-background p-4 text-left hover:border-primary/50 hover:bg-rose-50/50 transition-all group disabled:opacity-50"
+            className="rounded-xl border border-border bg-background p-4 hover:border-primary/50 hover:bg-rose-50/50 transition-all group"
           >
             <div className="flex items-start gap-3">
               <span className="text-2xl shrink-0">{mood.emoji}</span>
@@ -846,17 +985,35 @@ function ElanaPhase1({ moods, onChoose, isPending }: {
                     </span>
                   ))}
                 </div>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <button
+                    onClick={() => onChoose(mood.id)}
+                    disabled={isPending}
+                    className="px-3 py-1.5 rounded-lg bg-rose-900 text-white text-xs font-sans hover:bg-rose-800 transition-colors disabled:opacity-50"
+                  >
+                    Choose this vibe
+                  </button>
+                  <a
+                    href={getSpotifyMoodUrl(mood, searchContext)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3 py-1.5 rounded-lg border border-rose-200 text-rose-700 text-xs font-sans hover:bg-rose-50 transition-colors inline-flex items-center gap-1.5"
+                  >
+                    Prep in Spotify <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
               </div>
             </div>
-          </button>
+          </div>
         ))}
       </div>
     </div>
   );
 }
 
-function ElanaPhase2({ chosenMood, elanaItems, onToggle, onAdvance, onReset, isPending }: {
+function ElanaPhase2({ chosenMood, searchContext, elanaItems, onToggle, onAdvance, onReset, isPending }: {
   chosenMood?: MoodOption;
+  searchContext: string;
   elanaItems: { id: number; label: string; completed: boolean }[];
   onToggle: (id: number, completed: boolean) => void;
   onAdvance: () => void;
@@ -886,7 +1043,7 @@ function ElanaPhase2({ chosenMood, elanaItems, onToggle, onAdvance, onReset, isP
       )}
 
       {chosenMood && (
-        <div>
+        <div className="space-y-3">
           <p className="text-xs text-muted-foreground uppercase tracking-widest font-sans mb-2">Start with these artists</p>
           <div className="flex flex-wrap gap-2">
             {chosenMood.artists.map((artist) => (
@@ -895,6 +1052,14 @@ function ElanaPhase2({ chosenMood, elanaItems, onToggle, onAdvance, onReset, isP
               </span>
             ))}
           </div>
+          <a
+            href={getSpotifyMoodUrl(chosenMood, searchContext)}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-xl border border-rose-200 px-4 py-2 text-sm font-sans text-rose-700 hover:bg-rose-50 transition-colors"
+          >
+            Prep playlist in Spotify <ExternalLink className="w-4 h-4" />
+          </a>
         </div>
       )}
 
@@ -944,7 +1109,19 @@ function ElanaPhase2({ chosenMood, elanaItems, onToggle, onAdvance, onReset, isP
   );
 }
 
-function ElanaPhase3({ chosenMood, onReset, isPending }: { chosenMood?: MoodOption; onReset: () => void; isPending: boolean }) {
+function ElanaPhase3({
+  chosenMood,
+  searchContext,
+  onReset,
+  isPending,
+  cookingLead,
+}: {
+  chosenMood?: MoodOption;
+  searchContext: string;
+  onReset: () => void;
+  isPending: boolean;
+  cookingLead: string;
+}) {
   return (
     <div className="space-y-4">
       <div className="rounded-xl bg-rose-50 border border-rose-200 p-4">
@@ -967,8 +1144,18 @@ function ElanaPhase3({ chosenMood, onReset, isPending }: { chosenMood?: MoodOpti
         </div>
       </div>
       <p className="text-sm text-muted-foreground font-sans leading-relaxed">
-        Your playlist is ready. Hit play before Seth starts cooking — let the room settle into the feeling before anything happens. You set the tone. That's the power.
+        Your playlist is ready. Hit play before {cookingLead} starts cooking — let the room settle into the feeling before anything happens. You set the tone. That's the power.
       </p>
+      {chosenMood && (
+        <a
+          href={getSpotifyMoodUrl(chosenMood, searchContext)}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-2 rounded-xl border border-rose-200 px-4 py-2 text-sm font-sans text-rose-700 hover:bg-rose-50 transition-colors"
+        >
+          Open Spotify playlist search <ExternalLink className="w-4 h-4" />
+        </a>
+      )}
       <div className="rounded-xl border border-border p-4 space-y-2">
         <p className="text-xs text-muted-foreground uppercase tracking-widest font-sans">Tonight you're the curator</p>
         <ul className="space-y-1.5 text-sm font-sans text-foreground/80">

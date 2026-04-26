@@ -1,0 +1,723 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Year of Dates API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: dates
+    description: Monthly date plans
+  - name: reflections
+    description: Post-date reflections and memories
+  - name: checklist
+    description: Prep checklist items
+  - name: favorites
+    description: Saved favorites (rituals, activities, prompts)
+  - name: learnings
+    description: Learnings about each other
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /dates:
+    get:
+      operationId: listDates
+      tags: [dates]
+      summary: List all 12 monthly date plans
+      responses:
+        "200":
+          description: All date plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DatePlan"
+
+  /dates/{month}:
+    get:
+      operationId: getDate
+      tags: [dates]
+      summary: Get a specific month's date plan
+      parameters:
+        - name: month
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+      responses:
+        "200":
+          description: Date plan for the month
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatePlan"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateDate
+      tags: [dates]
+      summary: Update a date plan (e.g. scheduled date, completed status)
+      parameters:
+        - name: month
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDateBody"
+      responses:
+        "200":
+          description: Updated date plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatePlan"
+
+  /reflections:
+    get:
+      operationId: listReflections
+      tags: [reflections]
+      summary: List all reflections
+      responses:
+        "200":
+          description: All reflections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reflection"
+    post:
+      operationId: createReflection
+      tags: [reflections]
+      summary: Save a post-date reflection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReflectionBody"
+      responses:
+        "201":
+          description: Created reflection
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reflection"
+
+  /reflections/{id}:
+    get:
+      operationId: getReflection
+      tags: [reflections]
+      summary: Get a specific reflection
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Reflection
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reflection"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateReflection
+      tags: [reflections]
+      summary: Update a reflection
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateReflectionBody"
+      responses:
+        "200":
+          description: Updated reflection
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reflection"
+    delete:
+      operationId: deleteReflection
+      tags: [reflections]
+      summary: Delete a reflection
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /checklist/{month}:
+    get:
+      operationId: getChecklist
+      tags: [checklist]
+      summary: Get checklist items for a month
+      parameters:
+        - name: month
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+      responses:
+        "200":
+          description: Checklist items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChecklistItem"
+
+  /checklist/{month}/{itemId}:
+    patch:
+      operationId: toggleChecklistItem
+      tags: [checklist]
+      summary: Toggle a checklist item
+      parameters:
+        - name: month
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ToggleChecklistItemBody"
+      responses:
+        "200":
+          description: Updated checklist item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChecklistItem"
+
+  /favorites:
+    get:
+      operationId: listFavorites
+      tags: [favorites]
+      summary: List saved favorites
+      responses:
+        "200":
+          description: Favorites
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Favorite"
+    post:
+      operationId: createFavorite
+      tags: [favorites]
+      summary: Save a favorite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFavoriteBody"
+      responses:
+        "201":
+          description: Created favorite
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Favorite"
+
+  /favorites/{id}:
+    delete:
+      operationId: deleteFavorite
+      tags: [favorites]
+      summary: Remove a favorite
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /learnings:
+    get:
+      operationId: listLearnings
+      tags: [learnings]
+      summary: List all learnings about each other
+      responses:
+        "200":
+          description: Learnings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Learning"
+    post:
+      operationId: createLearning
+      tags: [learnings]
+      summary: Record something you learned about each other
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateLearningBody"
+      responses:
+        "201":
+          description: Created learning
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Learning"
+
+  /learnings/{id}:
+    delete:
+      operationId: deleteLearning
+      tags: [learnings]
+      summary: Delete a learning
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /summary:
+    get:
+      operationId: getSummary
+      tags: [dates]
+      summary: Dashboard summary - completed dates, upcoming, memory count
+      responses:
+        "200":
+          description: Summary stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Summary"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    RecipeOption:
+      type: object
+      properties:
+        id:
+          type: integer
+        dish:
+          type: string
+        cuisine:
+          type: string
+        description:
+          type: string
+        difficulty:
+          type: string
+        prepTime:
+          type: string
+        ingredients:
+          type: array
+          items:
+            type: string
+      required: [id, dish, cuisine, description, difficulty, prepTime, ingredients]
+
+    MoodOption:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        emoji:
+          type: string
+        description:
+          type: string
+        artists:
+          type: array
+          items:
+            type: string
+        playlistDirection:
+          type: string
+      required: [id, name, emoji, description, artists, playlistDirection]
+
+    DatePlan:
+      type: object
+      properties:
+        month:
+          type: integer
+        monthName:
+          type: string
+        theme:
+          type: string
+        destination:
+          type: string
+        tagline:
+          type: string
+        intro:
+          type: string
+        dinner:
+          type: object
+          properties:
+            options:
+              type: array
+              items:
+                $ref: "#/components/schemas/RecipeOption"
+          required: [options]
+        music:
+          type: object
+          properties:
+            moods:
+              type: array
+              items:
+                $ref: "#/components/schemas/MoodOption"
+          required: [moods]
+        ritual:
+          type: object
+          properties:
+            title:
+              type: string
+            description:
+              type: string
+          required: [title, description]
+        conversationPrompts:
+          type: array
+          items:
+            type: string
+        activity:
+          type: object
+          properties:
+            title:
+              type: string
+            description:
+              type: string
+          required: [title, description]
+        localAddOn:
+          type: object
+          properties:
+            title:
+              type: string
+            description:
+              type: string
+          required: [title, description]
+        effort:
+          type: string
+        cost:
+          type: string
+        duration:
+          type: string
+        scheduledDate:
+          type: string
+          nullable: true
+        completed:
+          type: boolean
+        completedAt:
+          type: string
+          nullable: true
+        sethPhase:
+          type: integer
+        elanaPhase:
+          type: integer
+        sethRecipeChoice:
+          type: integer
+          nullable: true
+        elanaVibeChoice:
+          type: string
+          nullable: true
+        funFacts:
+          type: array
+          items:
+            type: string
+      required:
+        - month
+        - monthName
+        - theme
+        - destination
+        - tagline
+        - intro
+        - dinner
+        - music
+        - ritual
+        - conversationPrompts
+        - activity
+        - localAddOn
+        - effort
+        - cost
+        - duration
+        - completed
+        - sethPhase
+        - elanaPhase
+        - funFacts
+
+    UpdateDateBody:
+      type: object
+      properties:
+        scheduledDate:
+          type: string
+          nullable: true
+        completed:
+          type: boolean
+        completedAt:
+          type: string
+          nullable: true
+        sethPhase:
+          type: integer
+        elanaPhase:
+          type: integer
+        sethRecipeChoice:
+          type: integer
+          nullable: true
+        elanaVibeChoice:
+          type: string
+          nullable: true
+
+    Reflection:
+      type: object
+      properties:
+        id:
+          type: integer
+        month:
+          type: integer
+        highlight:
+          type: string
+        memory:
+          type: string
+        learnedAboutEachOther:
+          type: string
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - month
+        - highlight
+        - memory
+        - learnedAboutEachOther
+        - rating
+        - createdAt
+        - updatedAt
+
+    CreateReflectionBody:
+      type: object
+      properties:
+        month:
+          type: integer
+        highlight:
+          type: string
+        memory:
+          type: string
+        learnedAboutEachOther:
+          type: string
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+      required:
+        - month
+        - highlight
+        - memory
+        - learnedAboutEachOther
+        - rating
+
+    UpdateReflectionBody:
+      type: object
+      properties:
+        highlight:
+          type: string
+        memory:
+          type: string
+        learnedAboutEachOther:
+          type: string
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+
+    ChecklistItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        month:
+          type: integer
+        label:
+          type: string
+        completed:
+          type: boolean
+        phase:
+          type: integer
+          description: "Which day (1/2/3) this item belongs to"
+        person:
+          type: string
+          description: "Who this item is for: seth, elana, or both"
+      required:
+        - id
+        - month
+        - label
+        - completed
+        - phase
+        - person
+
+    ToggleChecklistItemBody:
+      type: object
+      properties:
+        completed:
+          type: boolean
+      required:
+        - completed
+
+    Favorite:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [ritual, activity, prompt]
+        content:
+          type: string
+        sourceMonth:
+          type: integer
+        createdAt:
+          type: string
+      required:
+        - id
+        - type
+        - content
+        - sourceMonth
+        - createdAt
+
+    CreateFavoriteBody:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [ritual, activity, prompt]
+        content:
+          type: string
+        sourceMonth:
+          type: integer
+      required:
+        - type
+        - content
+        - sourceMonth
+
+    Learning:
+      type: object
+      properties:
+        id:
+          type: integer
+        month:
+          type: integer
+        about:
+          type: string
+          enum: [seth, elana, both]
+        content:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - month
+        - about
+        - content
+        - createdAt
+
+    CreateLearningBody:
+      type: object
+      properties:
+        month:
+          type: integer
+        about:
+          type: string
+          enum: [seth, elana, both]
+        content:
+          type: string
+      required:
+        - month
+        - about
+        - content
+
+    Summary:
+      type: object
+      properties:
+        totalDates:
+          type: integer
+        completedDates:
+          type: integer
+        upcomingMonth:
+          type: integer
+          nullable: true
+        totalReflections:
+          type: integer
+        totalLearnings:
+          type: integer
+        nextScheduledDate:
+          type: string
+          nullable: true
+      required:
+        - totalDates
+        - completedDates
+        - totalReflections
+        - totalLearnings

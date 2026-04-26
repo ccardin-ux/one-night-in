@@ -7,6 +7,7 @@ import MonthDetail from "@/pages/MonthDetail";
 import Reflections from "@/pages/Reflections";
 import Learnings from "@/pages/Learnings";
 import Favorites from "@/pages/Favorites";
+import Setup from "@/pages/Setup";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -22,6 +23,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/setup" component={Setup} />
       <Route path="/month/:month" component={MonthDetail} />
       <Route path="/reflections" component={Reflections} />
       <Route path="/learnings" component={Learnings} />

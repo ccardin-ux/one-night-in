@@ -14,6 +14,14 @@ import type {
   UpdateDateBody,
 } from "@workspace/api-client-react";
 import { CHECKLIST_ITEMS, STATIC_DATE_PLANS } from "./static-seed";
+import {
+  getChefRoles,
+  getCoupleProfile,
+  saveChefRole,
+  saveCoupleProfile,
+  type ChefRoleState,
+  type CoupleProfile,
+} from "./couple-profile";
 
 type QueryOptions = {
   query?: {
@@ -56,6 +64,8 @@ type MemoryBackup = {
     favorites: Favorite[];
     reflections: Reflection[];
     learnings: Learning[];
+    profile?: CoupleProfile | null;
+    chefRoles?: ChefRoleState;
   };
 };
 
@@ -200,6 +210,8 @@ export function createMemoryBackup(): MemoryBackup {
       favorites: getFavorites(),
       reflections: getReflections(),
       learnings: getLearnings(),
+      profile: getCoupleProfile(),
+      chefRoles: getChefRoles(),
     },
   };
 }
@@ -214,7 +226,9 @@ export function downloadKeepsake(): void {
   const favorites = getFavorites();
   const reflections = getReflections();
   const learnings = getLearnings();
+  const profile = getCoupleProfile();
   const completedDates = dates.filter((date) => date.completed);
+  const coupleName = profile ? `${profile.partnerOne} + ${profile.partnerTwo}` : "Year of Dates";
 
   const monthName = (month: number) =>
     dates.find((date) => date.month === month)?.monthName ?? `Month ${month}`;
@@ -287,7 +301,7 @@ export function downloadKeepsake(): void {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Year of Dates Keepsake</title>
+  <title>${escapeHtml(coupleName)} Keepsake</title>
   <style>
     body { margin: 0; background: #f7f3ec; color: #2b2420; font-family: Georgia, serif; line-height: 1.6; }
     main { max-width: 760px; margin: 0 auto; padding: 48px 24px; }
@@ -302,7 +316,7 @@ export function downloadKeepsake(): void {
 <body>
   <main>
     <p class="eyebrow">Exported ${escapeHtml(formatDate(new Date().toISOString()))}</p>
-    <h1>Year of Dates Keepsake</h1>
+    <h1>${escapeHtml(coupleName)} Keepsake</h1>
     <p>A private record of memories, favorites, learnings, and completed date nights.</p>
     ${sections}${emptyState}
   </main>
@@ -325,6 +339,10 @@ export function importMemoryBackup(rawBackup: unknown): void {
   writeStorage(FAVORITES_KEY, backup.data.favorites ?? []);
   writeStorage(REFLECTIONS_KEY, backup.data.reflections ?? []);
   writeStorage(LEARNINGS_KEY, backup.data.learnings ?? []);
+  if (backup.data.profile) saveCoupleProfile(backup.data.profile);
+  Object.entries(backup.data.chefRoles ?? {}).forEach(([month, role]) => {
+    saveChefRole(Number(month), role);
+  });
 }
 
 export function clearStoredMemories(): void {

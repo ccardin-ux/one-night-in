@@ -48,6 +48,16 @@ export function downloadICS(title: string, date: string, description: string) {
   URL.revokeObjectURL(url);
 }
 
+export function generateSpotifySearchUrl(parts: Array<string | undefined>): string {
+  const query = parts
+    .filter((part): part is string => Boolean(part?.trim()))
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return `https://open.spotify.com/search/${encodeURIComponent(query || "date night playlist")}`;
+}
+
 export function getMonthGradient(month: number): string {
   const gradients: Record<number, string> = {
     1: "from-slate-600 to-slate-800",
